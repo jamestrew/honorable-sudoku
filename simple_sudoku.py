@@ -60,19 +60,18 @@ def solve():
                 for n in range(1,10):
                     if is_possible(x, y, n):
                         game[x][y] = n
-                        """
-                        if x == 8 and y == 8:
-                            solution = game
-                            return
-                        """
                         solve()
                         game[x][y] = 0
                 return
     print_board(game)
-    solution = game
+    print("\n")
+    if game[8][8] != 0: # what the fuck
+        print(game[8][8])
+        solution = game
+
 
 solve()
-auto_solve = 2
+auto_solve = 2 # temporary
 if auto_solve == 2:
     print("\nSolution:")
     print_board(solution)

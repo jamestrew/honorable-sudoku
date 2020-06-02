@@ -1,3 +1,12 @@
+"""
+
+Classic sudoku
+
+"""
+
+
+# setting up an easy game board
+# maybe add other options/difficulties later
 easy = [
     [5,0,0,8,3,2,4,0,6],
     [0,6,3,7,4,0,0,0,0],
@@ -12,7 +21,7 @@ easy = [
 
 game = easy
 
-# show board
+# print the board semi-cleanly
 def print_board(game):
     for row in game:
         print(" ".join(map(str,row)))
@@ -21,7 +30,7 @@ print("Starting Board:")
 print_board(game)
 print("\n")
 
-# solve mode
+# queries user for playmode
 #auto_solve = input("\n\nThis is a gay game.\n 1. Play\n 2. Auto solve\n")
 
 # checks whether the move is legal
@@ -75,7 +84,7 @@ auto_solve = 2 # temporary
 if auto_solve == 2:
     print("\nSolution:")
     print_board(solution)
-elif auto_solve == 1:
+elif auto_solve == 1: # user plays
     while is_playball(easy_game):
         x = int(input("Enter x coordinate: "))
         y = int(input("Enter y coordinate: "))

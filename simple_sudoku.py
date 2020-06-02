@@ -1,6 +1,8 @@
 """
 
 Classic sudoku
+BOARD SOLUTION: https://i.imgur.com/T4hYPQx.png
+
 
 """
 

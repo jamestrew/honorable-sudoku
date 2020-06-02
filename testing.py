@@ -75,6 +75,6 @@ dickbutt = """
                                       .U@@@.
 """
 
-print dickbutt
+print (dickbutt)
 print ("lol")
 # commit 3:22

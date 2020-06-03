@@ -25,11 +25,6 @@ easy = [
 
 game = Puzzle(easy)
 
-# print the board semi-cleanly
-def print_board(game):
-    for row in game:
-        print(" ".join(map(str,row)))
-
 print("Starting Board:")
 #print_board(game)
 print(game)
@@ -61,7 +56,7 @@ def is_possible(x, y, n):
 def is_playball(game):
     for i in range(9):
         for j in range(9):
-            if game[i, i] == 0:
+            if game[i, j] == 0:
                 return True
 
 # solves sudoko, runs regardless of player choice
@@ -74,17 +69,16 @@ def solve(game):
                     if is_possible(x, y, n):
                         game[x, y] = n
                         solve(game)
+                        game[x, y] = 0 # necessary for proper backtracking
                 return
-    #if game[8, 8] != 0: # what the fuck
-    #    print(game[8, 8])
-    #    solution = game
+    #print(game) # only time the solution exists/prints
 
 
 solve(game)
 auto_solve = 2  # temporary
 if auto_solve == 2:
     print("\nSolution:")
-    print(game)
+    print(game) # doesn't print solution
 elif auto_solve == 1:  # user plays
     while is_playball(game):
         x = int(input("Enter x coordinate: "))

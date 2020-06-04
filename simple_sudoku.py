@@ -61,7 +61,7 @@ def is_playball(game):
 
 # solves sudoko, runs regardless of player choice
 solution = []
-tmp = 0
+tmp = False
 def solve(game):
     global tmp
     for x in range(9):
@@ -71,20 +71,19 @@ def solve(game):
                     if is_possible(x, y, n):
                         game[x, y] = n
                         solve(game)
-                        if (tmp == 0):
+                        if (tmp == False):
                             game[x, y] = 0  # necessary for proper backtracking
-                    elif y*9+x == 80:
-                        tmp = 1
+                    elif x == 8 and y == 8:
+                        tmp = True
                 return
-    print(game)  # only time the solution exists/prints
-    print()
 
-print(solve(game))
+
+solve(game)
 print()
 auto_solve = 2  # temporary
 if auto_solve == 2:
     print("Solution:")
-    print(game)  # doesn't print solution
+    print(game)
 elif auto_solve == 1:  # user plays
     while is_playball(game):
         x = int(input("Enter x coordinate: "))

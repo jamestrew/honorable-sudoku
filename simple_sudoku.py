@@ -24,14 +24,15 @@ easy = [
 ]
 
 game = Puzzle(easy)
+usergame = Puzzle(easy) # saves a copy of the game for user play
 
 print("Starting Board:")
 #print_board(game)
 print(game)
-print('\n')
 
 # queries user for game mode
-#auto_solve = input("\n\nThis is a gay game.\n 1. Play\n 2. Auto solve\n")
+print("\nThis is a gay game.\n 1. Play\n 2. Auto solve")
+auto_solve = 2 #input("Enter gamemode: ")
 
 # checks whether the move is legal
 def is_possible(x, y, n):
@@ -60,7 +61,6 @@ def is_playball(game):
                 return True
 
 # solves sudoko, runs regardless of player choice
-solution = []
 tmp = False
 def solve(game):
     global tmp
@@ -80,18 +80,24 @@ def solve(game):
 
 solve(game)
 print()
-auto_solve = 2  # temporary
+print(usergame)
+print()
 if auto_solve == 2:
     print("Solution:")
     print(game)
 elif auto_solve == 1:  # user plays
-    while is_playball(game):
+    while is_playball(usergame):
+        print()
         x = int(input("Enter x coordinate: "))
         y = int(input("Enter y coordinate: "))
         n = int(input("Enter number to enter: "))
+        print()
 
-        if solution[x, y] == n:
-            game[x, y] = n
-            print(game)
+        if game[x, y] == n:
+            usergame[x, y] = n
+            print(usergame)
         else:
             print("Try again")
+
+    print()
+    print("YOU WIN. CONGRATS. UR GAY")

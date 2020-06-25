@@ -1,41 +1,38 @@
-"""
-
-Classic sudoku
-BOARD SOLUTION: https://i.imgur.com/T4hYPQx.png
-
-
-"""
-
 from sudoku import Puzzle
+import copy
+
+# User selects difficulty
+print("Select difficulty: \nEasy\nHard\nMagic\n")
+diff = input()
+
+if diff == "Easy":
+    fname = "easy.txt"
+elif diff == "Hard":
+    fname = "hard.txt"
+elif diff == "Magic":
+    fname = "magic.txt"
 
 
-# setting up an easy game board
-# maybe add other options/difficulties later
-easy = [
-    5, 0, 0, 8, 3, 2, 4, 0, 6,
-    0, 6, 3, 7, 4, 0, 0, 0, 0,
-    8, 0, 2, 1, 9, 0, 0, 0, 3,
-    0, 3, 0, 0, 2, 9, 1, 0, 5,
-    1, 0, 0, 0, 0, 8, 9, 6, 2,
-    0, 0, 0, 5, 0, 0, 0, 7, 0,
-    0, 0, 0, 0, 1, 0, 0, 2, 7,
-    0, 2, 6, 0, 0, 0, 5, 0, 0,
-    3, 1, 8, 0, 5, 0, 0, 4, 0
-]
+# # Read game from txt file and create game board
+with open(fname) as f:
+    rows = f.readlines()
 
-game = Puzzle(easy)
-usergame = Puzzle(easy) # saves a copy of the game for user play
+game = Puzzle()  # create game instance
+for i, row in enumerate(rows):
+    for j, num in enumerate(row.strip().split()):
+        game[i, j] = int(num)
 
-print("Starting Board:")
-#print_board(game)
-print(game)
 
 # queries user for game mode
+print(game)
 print("\nThis is a gay game.\n 1. Play\n 2. Auto solve")
-auto_solve = 2 #input("Enter gamemode: ")
+game_mode = int(input())  # 1 - user play, 2 - computer play
+usergame = copy.deepcopy(game)  # copy of the game for user
+sol_check = False
 
-# checks whether the move is legal
+
 def is_possible(x, y, n):
+    # checks whether the move is legal
     global game
     for i in range(9):
         if game[x, i] == n:
@@ -44,26 +41,27 @@ def is_possible(x, y, n):
         if game[i, y] == n:
             return False
 
-    x0 = (x//3)*3
-    y0 = (y//3)*3
+    x0 = (x // 3) * 3
+    y0 = (y // 3) * 3
 
-    for i in range(x0, x0+3):
-        for j in range(y0, y0+3):
+    for i in range(x0, x0 + 3):
+        for j in range(y0, y0 + 3):
             if game[i, j] == n:
                 return False
     return True
 
-# checks whether the game is finished, only for auto_solve = 1 (false)
+
 def is_playball(game):
+    # checks whether the game is finished
     for i in range(9):
         for j in range(9):
             if game[i, j] == 0:
                 return True
 
-# solves sudoko, runs regardless of player choice
-tmp = False
+
 def solve(game):
-    global tmp
+    # solves sudoko, runs regardless of player choice
+    global sol_check
     for x in range(9):
         for y in range(9):
             if game[x, y] == 0:
@@ -71,21 +69,19 @@ def solve(game):
                     if is_possible(x, y, n):
                         game[x, y] = n
                         solve(game)
-                        if (tmp == False):
-                            game[x, y] = 0  # necessary for proper backtracking
+                        if sol_check is False:
+                            game[x, y] = 0
                     elif x == 8 and y == 8:
-                        tmp = True
+                        sol_check = True
                 return
 
 
 solve(game)
 print()
-print(usergame)
-print()
-if auto_solve == 2:
+if game_mode == 2:
     print("Solution:")
     print(game)
-elif auto_solve == 1:  # user plays
+if game_mode == 1:  # user plays
     while is_playball(usergame):
         print()
         x = int(input("Enter x coordinate: "))
@@ -98,6 +94,7 @@ elif auto_solve == 1:  # user plays
             print(usergame)
         else:
             print("Try again")
+            print(usergame)
 
     print()
     print("YOU WIN. CONGRATS. UR GAY")

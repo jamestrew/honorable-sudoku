@@ -1,0 +1,14 @@
+[Dd]esktop.ini
+[Th]humbs.db
+.DS_Store
+$RECYCLE.BIN/
+*.stackdump
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+#pycharm
+/.idea

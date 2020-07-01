@@ -10,5 +10,8 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
-#pycharm
+# pycharm byte-code
 /.idea
+/__pycache__
+*.py[cod]
+*$py.class

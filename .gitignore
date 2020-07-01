@@ -1,0 +1,17 @@
+[Dd]esktop.ini
+[Tt]humbs.db
+.DS_Store
+$RECYCLE.BIN/
+*.stackdump
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# pycharm byte-code
+/.idea
+/__pycache__
+*.py[cod]
+*$py.class

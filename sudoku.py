@@ -69,8 +69,8 @@ class Puzzle(object):
             result.append(
                 # |{non-empty cells}| == |{unique cells}\{0}|
                 len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and
-                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(v_nbr)-{0}) and
-                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(v_nbr)-{0})
+                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and
+                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
             )
         return all(result)
 

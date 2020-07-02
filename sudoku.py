@@ -11,7 +11,12 @@ class Puzzle(object):
 
     """
     (Default/Copy) constructor
-        - Takes an optional non-positional argument of type Puzzle to copy
+        - Copies grid to self when given
+        - Runs board validation on creation of new instance
+        - Instance removed on a non-valid outcome
+        Requires:
+        - Optional grid arg is of <class 'Puzzle'> or <class 'List>
+        - Given grid follows classic logical rules of a Sudoku puzzle
     """
     def __init__(self, grid=None, /):
         if grid is None:  # fill empty grid
@@ -41,19 +46,21 @@ class Puzzle(object):
                          for (i) in range(0, len(self.__grid), DIM))
 
     def __getitem__(self, key):
-        return self.__grid[key[0]*9 + key[1]]
+        return self.__grid[DIM*key[0] + key[1]]
 
     def __setitem__(self, key, val):
-        self.__grid[key[0]*9 + key[1]] = val
+        if self[key[1], key[0]]!=val:
+            self.__grid[DIM*key[0] + key[1]] = val
+            self.__remainingMoves += 1 if val==0 else -1
 
     # METHODS ( PRIVATE ):
-    '''
+    """
     validate() returns True when the grid is correclty confirgured, otherwise False.
-        Config assertion:
+        Requires:
         - Puzzle is a 9*9 matrix
         - Each cell value is of <class: 'int'>
         - BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty)
-    '''
+    """
     def __validate(self):
         try:
             if len(self.__grid) != DIM*DIM: raise ValueError
@@ -74,24 +81,24 @@ class Puzzle(object):
             )
         return all(result)
 
-    '''
+    """
     vlookup(index) returns a ROW at the specified ROW-index.
         index follows 0..DIM convention (LHS to RHS)
-    '''
+    """
     def __vlookup(self, index, /):
         return self.__grid[index:: DIM]
 
-    '''
+    """
     hlookup(index) returns a COL at the specified COL-index.
         index follows 0..DIM convention (TOP to BOT)
-    '''
+    """
     def __hlookup(self, index, /):
         return self.__grid[index*DIM: DIM*(index+1)]
 
-    '''
+    """
     blookup(index) returns a BLK at the specified BLK-index.
         index follows 0..DIM convention (TOP-LHS to BOT-RHS)
-    '''
+    """
     def __blookup(self, index, /):
         offset = index//3  # skip to next row of submatrices
         n = DIM//3         # submatrix size (n*n)
@@ -102,13 +109,13 @@ class Puzzle(object):
         return reduce(operator.concat, blk_nbr, [])
 
     # public:
-    '''
+    """
     neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a lookup code.
         Specifying a lookup code changes function to return the i-th BLK, COL, or ROW.
         Range:
         - (int)index is in [0..DIM-1]
         - (int)lookup is in [0..2] or [BLK,COL,ROW]
-    '''
+    """
     def neighbor(self, index, lookup=None):
         # ASSERTS:
         if index<0 or index>=DIM:
@@ -126,11 +133,21 @@ class Puzzle(object):
             ROW: lambda idx: self.__hlookup(idx)
         }.get(lookup)(index)
 
+    """
+    remainingMoves() returns the number of cells that require input in order to
+        complete the puzzle.
+    """
     def remainingMoves(self):
         return self.__remainingMoves
 
+    """
+    empty() returns True if grid is zero-filled, otherwise False.
+    """
     def empty(self):
         return self.__remainingMoves == DIM*DIM
 
+    """
+    complete() returns True if all cells are non-zero (puzzle is complete), otherwise False.
+    """
     def complete(self):
         return self.__remainingMoves == 0

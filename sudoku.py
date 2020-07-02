@@ -16,7 +16,8 @@ class Puzzle(object):
         if grid is None:  # fill empty grid
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
-            pass
+            self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
+            self.__grid = reduce(operator.concat, self.__grid, [])
         elif isinstance(grid, list):    # copy init
             self.__grid = [cp%(DIM+1) for cp in grid]
         else:

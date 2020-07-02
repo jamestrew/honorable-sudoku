@@ -188,5 +188,10 @@ class Game(tk.Frame):
                                 )
         exit_button.place(x=75, y=5)
 
+        self.master.bind("<Button-1>", self.click)
+
+    def click(self, event):
+        print("Clicked", event.widget)
+
 
 Game()

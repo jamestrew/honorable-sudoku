@@ -42,7 +42,7 @@ class Puzzle(object):
 
     # ( OVERRIDES ):
     def __str__(self):
-        return '\n'.join(' '.join(map(str, self.__grid[i:i + DIM]))
+        return '\n'.join(' '.join(map(str, self.__grid[i: i+DIM]))
                          for (i) in range(0, len(self.__grid), DIM))
 
     def __getitem__(self, key):
@@ -100,21 +100,21 @@ class Puzzle(object):
         index follows 0..DIM convention (TOP-LHS to BOT-RHS)
     """
     def __blookup(self, index, /):
-        offset = index//3  # skip to next row of submatrices
-        n = DIM//3         # submatrix size (n*n)
+        offset = 2*DIM*(index//3)  # skip to next row of submatrices
+        n = DIM//3  # submatrix size (n*n)
         blk_nbr = (
-            self.__grid[(n*k)+(2*DIM*offset): n*(k+1)+(2*DIM*offset)]
+            self.__grid[(n*k)+offset: n*(k+1)+offset]
             for k in range(index, (2*n+index)+1, n)
         )
         return reduce(operator.concat, blk_nbr, [])
 
     # public:
     """
-    neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a lookup code.
-        Specifying a lookup code changes function to return the i-th BLK, COL, or ROW.
+    neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a
+            lookup code, changing return val to the i-th COL, ROW, or BLK.
         Range:
-        - (int)index is in [0..DIM-1]
-        - (int)lookup is in [0..2] or [BLK,COL,ROW]
+        - (int)index is in range[0..DIM-1]
+        - (int)lookup is in range[0..2] or [BLK,COL,ROW]
     """
     def neighbor(self, index, lookup=None):
         # ASSERTS:

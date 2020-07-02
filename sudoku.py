@@ -7,6 +7,7 @@ from functools import reduce
 class Puzzle(object):
     # grid: Z^1 array for board
     __grid = []
+    __remainingMoves = 0
 
     """
     (Default/Copy) constructor
@@ -31,6 +32,8 @@ class Puzzle(object):
             (
                 f"validation failed."
             )
+        else:
+            self.__remainingMoves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
 
     # ( OVERRIDES ):
     def __str__(self):
@@ -65,9 +68,9 @@ class Puzzle(object):
             b_nbr = self.__blookup(i)
             result.append(
                 # |{non-empty cells}| == |{unique cells}\{0}|
-                len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr))-1 and
-                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr))-1 and
-                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr))-1
+                len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and
+                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(v_nbr)-{0}) and
+                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(v_nbr)-{0})
             )
         return all(result)
 
@@ -117,3 +120,12 @@ class Puzzle(object):
             COL: lambda idx: self.__vlookup(idx),
             ROW: lambda idx: self.__hlookup(idx)
         }.get(lookup)(index)
+
+    def remainingMoves(self):
+        return self.__remainingMoves
+
+    def empty(self):
+        return self.__remainingMoves == DIM*DIM
+
+    def complete(self):
+        return self.__remainingMoves == 0

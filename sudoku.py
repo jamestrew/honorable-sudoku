@@ -7,7 +7,7 @@ from functools import reduce
 class Puzzle(object):
     # grid: Z^1 array for board
     __grid = []
-    __remainingMoves = 0
+    __remaining_moves = 0
 
     """
     (Default/Copy) constructor
@@ -38,7 +38,7 @@ class Puzzle(object):
                 f"validation failed."
             )
         else:
-            self.__remainingMoves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
+            self.__remaining_moves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
 
     # ( OVERRIDES ):
     def __str__(self):
@@ -49,9 +49,7 @@ class Puzzle(object):
         return self.__grid[DIM*key[0] + key[1]]
 
     def __setitem__(self, key, val):
-        if self[key[1], key[0]]!=val:
-            self.__grid[DIM*key[0] + key[1]] = val
-            self.__remainingMoves += 1 if val==0 else -1
+        self.update(key[1], key[0], val)
 
     # METHODS ( PRIVATE ):
     """
@@ -134,20 +132,38 @@ class Puzzle(object):
         }.get(lookup)(index)
 
     """
-    remainingMoves() returns the number of cells that require input in order to
-        complete the puzzle.
+    update(index, val) returns True if the given move was successful,
+            otherwise False.
+        Requires: (int)x,(int)y is in range[0..DIM-1]
+        Affects: grid changes at the specified index with the given val
     """
-    def remainingMoves(self):
-        return self.__remainingMoves
+    def update(self, x, y, val, /):
+        if self[x, y]==val: return False
 
-    """
-    empty() returns True if grid is zero-filled, otherwise False.
-    """
+        v_nbr = self.neighbor(x, COL)
+        h_nbr = self.neighbor(y, ROW)
+        b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
+        v_nbr[y] = h_nbr[x] = b_nbr[3*(y%3) + x%3] = val  # peek-update
+
+        valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
+                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
+                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
+        if valid:
+            self.__grid[DIM*y + x] = val
+            self.__remaining_moves += 1 if val == 0 else -1
+        return valid
+
+    @property
+    def remaining_moves(self):
+        # number of moves away from completion
+        return self.__remaining_moves
+
+    @property
     def empty(self):
-        return self.__remainingMoves == DIM*DIM
+        # True if grid is zero-filled, otherwise False
+        return self.__remaining_moves == DIM*DIM
 
-    """
-    complete() returns True if all cells are non-zero (puzzle is complete), otherwise False.
-    """
+    @property
     def complete(self):
-        return self.__remainingMoves == 0
+        # True if all cells are non-zero (puzzle is complete), otherwise False.
+        return self.__remaining_moves == 0

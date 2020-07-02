@@ -93,9 +93,11 @@ class Puzzle(object):
         index follows 0..DIM convention (TOP-LHS to BOT-RHS)
     '''
     def __blookup(self, index, /):
+        offset = index//3  # skip to next row of submatrices
+        n = DIM//3         # submatrix size (n*n)
         blk_nbr = (
-            self.__grid[k*DIM//3: DIM//3*(k+1)]
-            for k in range(index, (2*DIM//3+index)+1, DIM//3)
+            self.__grid[(n*k)+(2*DIM*offset): n*(k+1)+(2*DIM*offset)]
+            for k in range(index, (2*n+index)+1, n)
         )
         return reduce(operator.concat, blk_nbr, [])
 
@@ -110,12 +112,15 @@ class Puzzle(object):
     def neighbor(self, index, lookup=None):
         # ASSERTS:
         if index<0 or index>=DIM:
-            raise ValueError
-        if lookup and not(isinstance(lookup, int)):
-            raise TypeError
+            raise ValueError      # out of range
+        if lookup:
+            if not isinstance(lookup, int):
+                raise TypeError   # invalid type
+            elif lookup<0 or lookup>2:
+                raise ValueError  # out of range
+        else: lookup = BLK        # default
 
-        if not lookup: lookup = BLK   # default
-        return {
+        return {  # fetch by lookup-code at given index
             BLK: lambda idx: self.__blookup(idx),
             COL: lambda idx: self.__vlookup(idx),
             ROW: lambda idx: self.__hlookup(idx)

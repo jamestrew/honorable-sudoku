@@ -1,6 +1,10 @@
-import operator
+from operator import concat
 from const import *
 from functools import reduce
+
+
+class Notification(object):
+    pass
 
 
 """ Sudoku::MODEL """
@@ -23,7 +27,7 @@ class Puzzle(object):
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
             self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
-            self.__grid = reduce(operator.concat, self.__grid, [])
+            self.__grid = reduce(concat, self.__grid, [])
         elif isinstance(grid, list):    # copy init
             self.__grid = [cp%(DIM+1) for cp in grid]
         else:
@@ -104,7 +108,7 @@ class Puzzle(object):
             self.__grid[(n*k)+offset: n*(k+1)+offset]
             for k in range(index, (2*n+index)+1, n)
         )
-        return reduce(operator.concat, blk_nbr, [])
+        return reduce(concat, blk_nbr, [])
 
     # public:
     """

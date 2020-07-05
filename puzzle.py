@@ -154,8 +154,8 @@ class Puzzle(object):
         v_nbr[y] = h_nbr[x] = b_nbr[3*(y%3) + x%3] = val  # peek-update
 
         valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
-                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
-                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
+            len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
+            len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
         if valid:
             self.__grid[DIM*y + x] = val
             self.__remaining_moves += 1 if val == 0 else -1

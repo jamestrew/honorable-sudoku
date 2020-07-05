@@ -13,8 +13,8 @@ class ViewMeta(type):
 class MetaUnion(ABCMeta, ViewMeta): pass
 
 
-""" Sudoku::VIEW """
 class View(metaclass=MetaUnion):
+    """ Sudoku::VIEW """
     # List of non-abstract views (fwd declaration)
     views = ["TextDisplay", "WidgetDisplay"]
 

@@ -31,7 +31,7 @@ class Puzzle(object):
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
             self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
-            self.__grid = reduce(concat, self.__grid, [])
+            self.__grid = reduce(concat, self.__grid, [])  # noqa
         elif isinstance(grid, list):    # copy init
             self.__grid = [cp%(DIM+1) for cp in grid]
         else:
@@ -68,10 +68,9 @@ class Puzzle(object):
         """
         try:
             if len(self.__grid) != DIM*DIM: raise ValueError
-            grid = list(map(int, self.__grid))
+            list(map(int, self.__grid))
         except (TypeError, ValueError):
             return False
-        grid= list(map(int, grid))
         result = []  # distinct-check flags
         for i in range(DIM):
             v_nbr = self.__vlookup(i)
@@ -110,7 +109,7 @@ class Puzzle(object):
             self.__grid[(n*k)+offset: n*(k+1)+offset]
             for k in range(index, (2*n+index)+1, n)
         )
-        return reduce(concat, blk_nbr, [])
+        return reduce(concat, blk_nbr, [])  # noqa
 
     # METHODS ( PUBLIC ):
     def neighbor(self, index, lookup=None):

@@ -32,7 +32,7 @@ class Controller(Notification):
             # input three numbers (x, y, val)
             x, y, val = list(map(int, input().strip().split()))
             if not(self.__p.update(x, y, val)):
-                print("[Debug] invalid move.")
+                print(f"[Debug] {type(self)}: invalid move.")
 
     # METHODS ( PRIVATE ):
     def __print_puzzle(self):

@@ -1,11 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from operator import concat
 from const import *
 from functools import reduce
 
 
-class Notification(ABC):
-
+class Notification(metaclass=ABCMeta):
     @abstractmethod
     def notify(self, x, y, val, /): pass
 

@@ -12,12 +12,13 @@ class ViewMeta(type):
 
 """ Sudoku::VIEW """
 class View(metaclass=ViewMeta):
-    views = ["TextDisplay", "WidgetDisplay"]  # Required: ORDER(SORTED):ASC
+    # List of non-abstract views (fwd declaration)
+    views = ["TextDisplay", "WidgetDisplay"]
 
     @abstractmethod
     def notify(self, x, y, val, /): pass
 
 
-""" ( FWD DECLARATION ) """
-class TextDisplay(View): pass
-class WidgetDisplay(View): pass
+""" ( VIEW::.. ) """
+from text_display import TextDisplay
+from widget_display import WidgetDisplay

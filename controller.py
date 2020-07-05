@@ -1,7 +1,8 @@
-from sudoku import *
+from puzzle import *
 from view import *
 
 
+""" Sudoku::CONTROLLER """
 class Controller(Notification):
     __p = None  # Puzzle
     __v = None  # View
@@ -26,7 +27,7 @@ class Controller(Notification):
     start_game() initializes the start of a new Sudoku game.
     """
     def start_game(self):
-        self.__v = WidgetDisplay()
+        self.__v = TextDisplay()
         while not(self.__check_win()):
             # input three numbers (x, y, val)
             x, y, val = list(map(int, input().strip().split()))

@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
 class ViewMeta(type):
@@ -10,8 +10,11 @@ class ViewMeta(type):
         super().__init__(name, base, attr_dict)
 
 
+class MetaUnion(ABCMeta, ViewMeta): pass
+
+
 """ Sudoku::VIEW """
-class View(metaclass=ViewMeta):
+class View(metaclass=MetaUnion):
     # List of non-abstract views (fwd declaration)
     views = ["TextDisplay", "WidgetDisplay"]
 

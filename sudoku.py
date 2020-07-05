@@ -1,10 +1,12 @@
+from abc import ABC, abstractmethod
 from operator import concat
 from const import *
 from functools import reduce
 
 
-class Notification(object):
-    pass
+class Notification(ABC):
+    @abstractmethod
+    def notify(self, x, y, val, /): pass
 
 
 """ Sudoku::MODEL """
@@ -22,7 +24,9 @@ class Puzzle(object):
         - Optional grid arg is of <class 'Puzzle'> or <class 'List>
         - Given grid follows classic logical rules of a Sudoku puzzle
     """
-    def __init__(self, grid=None, /):
+    def __init__(self, grid=None, handle=None):
+        self.__notif = handle
+
         if grid is None:  # fill empty grid
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
@@ -110,7 +114,7 @@ class Puzzle(object):
         )
         return reduce(concat, blk_nbr, [])
 
-    # public:
+    # METHODS ( PUBLIC ):
     """
     neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a
             lookup code, changing return val to the i-th COL, ROW, or BLK.
@@ -155,6 +159,7 @@ class Puzzle(object):
         if valid:
             self.__grid[DIM*y + x] = val
             self.__remaining_moves += 1 if val == 0 else -1
+            if self.__notif: self.__notif.notify(x, y, val)
         return valid
 
     @property

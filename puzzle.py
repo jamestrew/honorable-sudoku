@@ -9,22 +9,22 @@ class Notification(metaclass=ABCMeta):
     def notify(self, x, y, val, /): pass
 
 
-""" Sudoku::MODEL """
 class Puzzle(object):
+    """ Sudoku::MODEL """
     # grid: Z^1 array for board
     __grid = []
     __remaining_moves = 0
 
-    """
-    (Default/Copy) constructor
-        - Copies grid to self when given
-        - Runs board validation on creation of new instance
-        - Instance removed on a non-valid outcome
-        Requires:
-        - Optional grid arg is of <class 'Puzzle'> or <class 'List>
-        - Given grid follows classic logical rules of a Sudoku puzzle
-    """
     def __init__(self, grid=None, handle=None):
+        """
+        (Default/Copy) constructor
+            - Copies grid to self when given
+            - Runs board validation on creation of new instance
+            - Instance removed on a non-valid outcome
+            Requires:
+            - Optional grid arg is of <class 'Puzzle'> or <class 'List>
+            - Given grid follows classic logical rules of a Sudoku puzzle
+        """
         self.__notif = handle
 
         if grid is None:  # fill empty grid
@@ -60,14 +60,14 @@ class Puzzle(object):
         self.update(key[1], key[0], val)
 
     # METHODS ( PRIVATE ):
-    """
-    validate() returns True when the grid is correclty confirgured, otherwise False.
-        Requires:
-        - Puzzle is a 9*9 matrix
-        - Each cell value is of <class: 'int'>
-        - BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty)
-    """
     def __validate(self):
+        """
+        validate() returns True when the grid is correclty confirgured, otherwise False.
+            Requires:
+            - Puzzle is a 9*9 matrix
+            - Each cell value is of <class: 'int'>
+            - BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty)
+        """
         try:
             if len(self.__grid) != DIM*DIM: raise ValueError
             grid = list(map(int, self.__grid))
@@ -87,25 +87,25 @@ class Puzzle(object):
             )
         return all(result)
 
-    """
-    vlookup(index) returns a ROW at the specified ROW-index.
-        index follows 0..DIM convention (LHS to RHS)
-    """
     def __vlookup(self, index, /):
+        """
+        vlookup(index) returns a ROW at the specified ROW-index.
+            index follows 0..DIM convention (LHS to RHS)
+        """
         return self.__grid[index:: DIM]
 
-    """
-    hlookup(index) returns a COL at the specified COL-index.
-        index follows 0..DIM convention (TOP to BOT)
-    """
     def __hlookup(self, index, /):
+        """
+        hlookup(index) returns a COL at the specified COL-index.
+            index follows 0..DIM convention (TOP to BOT)
+        """
         return self.__grid[index*DIM: DIM*(index+1)]
 
-    """
-    blookup(index) returns a BLK at the specified BLK-index.
-        index follows 0..DIM convention (TOP-LHS to BOT-RHS)
-    """
     def __blookup(self, index, /):
+        """
+        blookup(index) returns a BLK at the specified BLK-index.
+            index follows 0..DIM convention (TOP-LHS to BOT-RHS)
+        """
         offset = 2*DIM*(index//3)  # skip to next row of submatrices
         n = DIM//3  # submatrix size (n*n)
         blk_nbr = (
@@ -115,14 +115,14 @@ class Puzzle(object):
         return reduce(concat, blk_nbr, [])
 
     # METHODS ( PUBLIC ):
-    """
-    neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a
-            lookup code, changing return val to the i-th COL, ROW, or BLK.
-        Range:
-        - (int)index is in range[0..DIM-1]
-        - (int)lookup is in range[0..2] or [BLK,COL,ROW]
-    """
     def neighbor(self, index, lookup=None):
+        """
+        neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a
+                lookup code, changing return val to the i-th COL, ROW, or BLK.
+            Range:
+            - (int)index is in range[0..DIM-1]
+            - (int)lookup is in range[0..2] or [BLK,COL,ROW]
+        """
         # ASSERTS:
         if index<0 or index>=DIM:
             raise ValueError      # out of range
@@ -139,13 +139,13 @@ class Puzzle(object):
             ROW: lambda idx: self.__hlookup(idx)
         }.get(lookup)(index)
 
-    """
-    update(index, val) returns True if the given move was successful,
-            otherwise False.
-        Requires: (int)x,(int)y is in range[0..DIM-1]
-        Affects: grid changes at the specified index with the given val
-    """
     def update(self, x, y, val, /):
+        """
+        update(index, val) returns True if the given move was successful,
+                otherwise False.
+            Requires: (int)x,(int)y is in range[0..DIM-1]
+            Affects: grid changes at the specified index with the given val
+        """
         if self[x, y]==val: return False
 
         v_nbr = self.neighbor(x, COL)

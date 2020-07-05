@@ -1,6 +1,5 @@
 WHITE = "#FFFFFF"
 BLACK = "#000000"
-NUMS = "#0A3095"
 
 FONTS = {
     55: ("Helvetica", "55", "bold"),

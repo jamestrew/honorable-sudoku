@@ -1,4 +1,5 @@
 from sudoku import *
+from view import *
 
 
 class Controller(Notification):
@@ -11,7 +12,7 @@ class Controller(Notification):
         val is fwd'd to View upon successful update to the main Puzzle.
     """
     def notify(self, x, y, val, /):
-        print(f"[Debug] successfully changed (col:{x}, row:{y}) to {val}.")
+        self.__v.notify(x, y, val)
         self.__print_puzzle()
 
     """
@@ -25,6 +26,7 @@ class Controller(Notification):
     start_game() initializes the start of a new Sudoku game.
     """
     def start_game(self):
+        self.__v = WidgetDisplay()
         while not(self.__check_win()):
             # input three numbers (x, y, val)
             x, y, val = list(map(int, input().strip().split()))

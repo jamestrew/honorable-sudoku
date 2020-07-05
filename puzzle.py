@@ -35,14 +35,12 @@ class Puzzle(object):
         elif isinstance(grid, list):    # copy init
             self.__grid = [cp%(DIM+1) for cp in grid]
         else:
-            raise TypeError\
-            (
+            raise TypeError(
                 f"expected {type(self)} or {type([])}, but found {type(grid)}"
             )
         if not self.__validate():
             del self  # that's unfortunate
-            raise ValueError\
-            (
+            raise ValueError(
                 f"validation failed."
             )
         else:
@@ -71,7 +69,7 @@ class Puzzle(object):
         try:
             if len(self.__grid) != DIM*DIM: raise ValueError
             grid = list(map(int, self.__grid))
-        except (TypeError, ValueError) as err:
+        except (TypeError, ValueError):
             return False
         grid= list(map(int, grid))
         result = []  # distinct-check flags

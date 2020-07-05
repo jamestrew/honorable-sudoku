@@ -23,5 +23,5 @@ class View(metaclass=MetaUnion):
 
 
 """ ( VIEW::.. ) """
-from text_display import TextDisplay
-from widget_display import WidgetDisplay
+from text_display import TextDisplay      # noqa
+from widget_display import WidgetDisplay  # noqa

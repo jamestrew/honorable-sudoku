@@ -11,6 +11,7 @@ $RECYCLE.BIN/
 *.lnk
 *.sublime-settings
 *.sublime-project
+*.sublime-workspace
 
 # pycharm byte-code
 /.idea

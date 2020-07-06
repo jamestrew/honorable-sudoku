@@ -9,7 +9,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
-.sublime-settings
+*.sublime-settings
 
 # pycharm byte-code
 /.idea

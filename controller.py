@@ -27,7 +27,7 @@ class Controller(Notification):
         """
         start_game() initializes the start of a new Sudoku game.
         """
-        self.__v = TextDisplay()
+        self.__v = WidgetDisplay()
         while not(self.__check_win()):
             # input three numbers (x, y, val)
             x, y, val = list(map(int, input().strip().split()))

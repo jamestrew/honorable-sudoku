@@ -1,5 +1,5 @@
 import tkinter as tk
-import formats as f
+from resource import *
 
 
 class Game(tk.Tk):
@@ -32,39 +32,39 @@ class Startup(tk.Frame):
         self.controller = controller
 
         bg_frame = tk.Frame(self, width=675, height=675,
-                            bg=f.BLACK, bd=5
+                            bg=BLACK, bd=5
                             )
         bg_frame.grid(padx=75, pady=(75, 120))
         bg_frame.grid_rowconfigure(0, weight=1)
         bg_frame.grid_columnconfigure(0, weight=1)
 
-        start_frame = tk.Frame(bg_frame, width=675, height=675, bg=f.WHITE)
+        start_frame = tk.Frame(bg_frame, width=675, height=675, bg=WHITE)
         start_frame.grid()
 
-        title = tk.Label(start_frame, text="GAYDOKU", bg=f.WHITE,
-                         fg=f.BLACK, font=f.FONTS[55]
+        title = tk.Label(start_frame, text="GAYDOKU", bg=WHITE,
+                         fg=BLACK, font=FONTS[55]
                          )
         title.grid(padx=10, pady=10)
 
         # GAMEMODE SELECT
-        mode_frame = tk.Frame(start_frame, bg=f.WHITE)
+        mode_frame = tk.Frame(start_frame, bg=WHITE)
         mode_frame.grid(row=1, padx=10, pady=10)
-        tk.Label(mode_frame, text="MODE: ", bg=f.WHITE, fg=f.BLACK,
-                 font=f.FONTS[30]
+        tk.Label(mode_frame, text="MODE: ", bg=WHITE, fg=BLACK,
+                 font=FONTS[30]
                  ).grid()
 
-        computer_button = tk.Button(mode_frame, text='COMP PLAY', bg=f.WHITE, fg=f.BLACK,
-                                    font=f.FONTS[25]
+        computer_button = tk.Button(mode_frame, text='COMP PLAY', bg=WHITE, fg=BLACK,
+                                    font=FONTS[25]
                                     )
-        user_button = tk.Button(mode_frame, text='USER PLAY', bg=f.WHITE, fg=f.BLACK,
-                                font=f.FONTS[25]
+        user_button = tk.Button(mode_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
+                                font=FONTS[25]
                                 )
         computer_button.grid(row=0, column=1, padx=5, pady=5)
         user_button.grid(row=0, column=2, padx=5, pady=5)
 
         # PLAY BUTTON
-        play_button = tk.Button(start_frame, text='PLAY', bg=f.WHITE, fg=f.BLACK,
-                                font=f.FONTS[25],
+        play_button = tk.Button(start_frame, text='PLAY', bg=WHITE, fg=BLACK,
+                                font=FONTS[25],
                                 command=lambda: controller.show_frame("Main")
                                 )
         play_button.grid()
@@ -75,7 +75,7 @@ class Main(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        bg_frame = tk.Frame(self, width=675, height=675, bg=f.BLACK, bd=5)
+        bg_frame = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
         bg_frame.grid(padx=75, pady=(75, 120))
 
         self.cells = []
@@ -89,22 +89,22 @@ class Main(tk.Frame):
                 if j % 3 == 0 and j != 0:
                     xborder = 5
 
-                cell_frame = tk.Frame(bg_frame, width=75, height=75, bg=f.WHITE)
+                cell_frame = tk.Frame(bg_frame, width=75, height=75, bg=WHITE)
                 cell_frame.grid(row=i, column=j,
                                 padx=(xborder, 0.5),
                                 pady=(yborder, 0.5)
                                 )
-                cell_number = tk.Label(bg_frame, bg=f.WHITE, fg=f.NUMS,
+                cell_number = tk.Label(bg_frame, bg=WHITE, fg=NUMS,
                                        text=i,
-                                       font=f.FONTS[20],
+                                       font=FONTS[20],
                                        )
                 cell_number.grid(row=i, column=j)
                 cell_data = {"number": cell_number}
                 row.append(cell_data)
             self.cells.append(row)
 
-        exit_button = tk.Button(self, text='EXIT', bg=f.WHITE, fg=f.BLACK,
-                                font=f.FONTS[25],
+        exit_button = tk.Button(self, text='EXIT', bg=WHITE, fg=BLACK,
+                                font=FONTS[25],
                                 command=lambda: controller.show_frame("Startup")
                                 )
         exit_button.place(x=75, y=5)

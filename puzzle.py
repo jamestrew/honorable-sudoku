@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from operator import concat
-from const import *
+from resource import *
 from functools import reduce
 
 

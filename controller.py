@@ -7,6 +7,9 @@ class Controller(Notification):
     __p = None  # Puzzle
     __v = None  # View
 
+    __gamemode = 0  # may be moved to another class
+    # A middleman between Controller-Model update calls to alter gamerules.
+
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         """
@@ -27,12 +30,24 @@ class Controller(Notification):
         """
         start_game() initializes the start of a new Sudoku game.
         """
-        self.__v = WidgetDisplay()
-        while not(self.__check_win()):
-            # input three numbers (x, y, val)
-            x, y, val = list(map(int, input().strip().split()))
-            if not(self.__p.update(x, y, val)):
-                print(f"[Debug] {type(self)}: invalid move.")
+        self.__v = WidgetDisplay(handle=self)
+        if isinstance(self.__v, TextDisplay):
+            while not(self.__check_win()):
+                # input three numbers (x, y, val)
+                x, y, val = list(map(int, input().strip().split()))
+                if not(self.__p.update(x, y, val)):
+                    print(f"[Debug] {type(self)}: invalid move.")
+        elif isinstance(self.__v, WidgetDisplay):
+            pass
+        else:
+            raise TypeError(
+                f"expected {View} or {WidgetDisplay}, but found {self.__v}"
+            )
+
+    def gamemode_update(self, state):
+        self.__gamemode = state
+        gm = self.__gamemode
+        print(f"[Debug] Gamemode updated: 0x{hex(gm)[2:].zfill(2).upper()}")
 
     # METHODS ( PRIVATE ):
     def __print_puzzle(self):

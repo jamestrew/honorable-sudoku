@@ -1,10 +1,11 @@
 import tkinter as tk
 from resource import *
+import sys
 
 
 class Game(tk.Tk):
     def __init__(self):
-        tk.Tk.__init__(self)
+        super().__init__()
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -16,7 +17,7 @@ class Game(tk.Tk):
             page_name = page.__name__
             frame = page(parent=container, controller=self)
             self.frames[page_name] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
+            frame.grid(row=0, column=0, sticky='ns')
 
         self.show_frame("Startup")
 
@@ -47,27 +48,85 @@ class Startup(tk.Frame):
         title.grid(padx=10, pady=10)
 
         # GAMEMODE SELECT
+        def set_gamemode(mode):
+            '''
+            Incomplete function
+            Raises/sinks button
+            Implement: pass gamemode
+            '''
+            computer_button.configure(relief='raised')
+            user_button.configure(relief='raised')
+            if mode == 1:
+                computer_button.configure(relief='sunken')
+            else:
+                user_button.configure(relief='sunken')
+
         mode_frame = tk.Frame(start_frame, bg=WHITE)
-        mode_frame.grid(row=1, padx=10, pady=10)
+        mode_frame.grid(row=1, padx=5, pady=5)
         tk.Label(mode_frame, text="MODE: ", bg=WHITE, fg=BLACK,
                  font=FONTS[30]
                  ).grid()
 
         computer_button = tk.Button(mode_frame, text='COMP PLAY', bg=WHITE, fg=BLACK,
-                                    font=FONTS[25]
+                                    font=FONTS[25], command=lambda: set_gamemode(1)
                                     )
         user_button = tk.Button(mode_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
-                                font=FONTS[25]
+                                font=FONTS[25], command=lambda: set_gamemode(2)
                                 )
-        computer_button.grid(row=0, column=1, padx=5, pady=5)
-        user_button.grid(row=0, column=2, padx=5, pady=5)
+        computer_button.grid(row=0, column=1, padx=2, pady=2)
+        user_button.grid(row=0, column=2, padx=2, pady=2)
+
+        # DIFFICULTY SELECT
+        def set_difficulty(diff):
+            '''
+            Incomplete function
+            Raises/sinks button
+            Implement: pass difficulty
+            '''
+            easy_button.configure(relief='raised')
+            hard_button.configure(relief='raised')
+            magic_button.configure(relief='raised')
+
+            if diff == 1:
+                easy_button.configure(relief='sunken')
+
+            elif diff == 2:
+                hard_button.configure(relief='sunken')
+
+            else:
+                magic_button.configure(relief='sunken')
+
+        diff_frame = tk.Frame(start_frame, bg=WHITE)
+        diff_frame.grid(row=2, padx=5, pady=5)
+        tk.Label(diff_frame, text="MODE: ", bg=WHITE, fg=BLACK,
+                 font=FONTS[30]
+                 ).grid()
+
+        easy_button = tk.Button(diff_frame, text='COMP PLAY', bg=WHITE, fg=BLACK,
+                                font=FONTS[25], command=lambda: set_difficulty(1)
+                                )
+        hard_button = tk.Button(diff_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
+                                font=FONTS[25], command=lambda: set_difficulty(2)
+                                )
+        magic_button = tk.Button(diff_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
+                                 font=FONTS[25], command=lambda: set_difficulty(3)
+                                 )
+        easy_button.grid(row=0, column=1, padx=2, pady=2)
+        hard_button.grid(row=0, column=2, padx=2, pady=2)
+        magic_button.grid(row=0, column=3, padx=2, pady=2)
 
         # PLAY BUTTON
         play_button = tk.Button(start_frame, text='PLAY', bg=WHITE, fg=BLACK,
                                 font=FONTS[25],
                                 command=lambda: controller.show_frame("Main")
                                 )
-        play_button.grid()
+        play_button.grid(padx=2, pady=2)
+
+        # EXIT GAME BUTTON
+        kill_button = tk.Button(start_frame, text='EXIT GAME', bg=WHITE, fg=BLACK,
+                                font=FONTS[25], command=sys.exit
+                                )
+        kill_button.grid(pady=(150, 2))
 
 
 class Main(tk.Frame):
@@ -110,6 +169,6 @@ class Main(tk.Frame):
         exit_button.place(x=75, y=5)
 
 
-if __name__ == "__main__":
-    app = Game()
-    app.mainloop()
+# if __name__ == "__main__":
+#     app = Game()
+#     app.mainloop()

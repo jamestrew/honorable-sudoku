@@ -8,6 +8,7 @@ class WidgetDisplay(tk.Tk, View):
 
     def __init__(self, handle=None):
         super().__init__()
+        self.__request = handle
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -17,7 +18,7 @@ class WidgetDisplay(tk.Tk, View):
         self.frames = {}
         for page in (Startup, Main):
             page_name = page.__name__
-            frame = page(parent=container, controller=self)
+            frame = page(parent=container, controller=self, handle=self.__request)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky='ns')
 
@@ -59,9 +60,12 @@ class Startup(tk.Frame):
     PLAY button is disabled until user select and gamemode and difficulty
     '''
 
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+    def __init__(self, parent, controller, handle=None):
+        super().__init__(parent)
         self.controller = controller
+        self.__request = handle
+        self.gamemode = None
+        self.difficulty = None
 
         bg_frame = tk.Frame(self, width=675, height=675,
                             bg=BLACK, bd=5
@@ -85,12 +89,15 @@ class Startup(tk.Frame):
             Raises/sinks button
             Implement: pass gamemode
             '''
+            self.gamemode = mode
             computer_button.configure(relief='raised')
             user_button.configure(relief='raised')
             if mode == 1:
                 computer_button.configure(relief='sunken')
             else:
                 user_button.configure(relief='sunken')
+            self.__request.gamemode_update(self.gamemode)
+            check_play()
 
         mode_frame = tk.Frame(start_frame, bg=WHITE)
         mode_frame.grid(row=1, padx=5, pady=5)
@@ -120,12 +127,14 @@ class Startup(tk.Frame):
 
             if diff == 1:
                 easy_button.configure(relief='sunken')
-
+                self.difficulty = 'Boards/easy.txt'
             elif diff == 2:
                 hard_button.configure(relief='sunken')
-
+                self.difficulty = 'Boards/hard.txt'
             else:
                 magic_button.configure(relief='sunken')
+                self.difficulty = 'Boards/magic.txt'
+            check_play()
 
         diff_frame = tk.Frame(start_frame, bg=WHITE)
         diff_frame.grid(row=2, padx=5, pady=5)
@@ -133,13 +142,13 @@ class Startup(tk.Frame):
                  font=FONTS[30]
                  ).grid()
 
-        easy_button = tk.Button(diff_frame, text='COMP PLAY', bg=WHITE, fg=BLACK,
+        easy_button = tk.Button(diff_frame, text='EASY', bg=WHITE, fg=BLACK,
                                 font=FONTS[25], command=lambda: set_difficulty(1)
                                 )
-        hard_button = tk.Button(diff_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
+        hard_button = tk.Button(diff_frame, text='HARD', bg=WHITE, fg=BLACK,
                                 font=FONTS[25], command=lambda: set_difficulty(2)
                                 )
-        magic_button = tk.Button(diff_frame, text='USER PLAY', bg=WHITE, fg=BLACK,
+        magic_button = tk.Button(diff_frame, text='MAGIC', bg=WHITE, fg=BLACK,
                                  font=FONTS[25], command=lambda: set_difficulty(3)
                                  )
         easy_button.grid(row=0, column=1, padx=2, pady=2)
@@ -147,10 +156,26 @@ class Startup(tk.Frame):
         magic_button.grid(row=0, column=3, padx=2, pady=2)
 
         # PLAY BUTTON
+        def play_game():
+            ''' Raises all buttons and loads the MAIN game '''
+            computer_button.configure(relief='raised')
+            user_button.configure(relief='raised')
+            easy_button.configure(relief='raised')
+            hard_button.configure(relief='raised')
+            magic_button.configure(relief='raised')
+
+            controller.show_frame("Main")
+
+        def check_play():
+            ''' Enable the PLAY button if gamemode and difficulty are selected'''
+            if self.gamemode is not None and self.difficulty is not None:
+                play_button.config(state="normal")
+
         play_button = tk.Button(start_frame, text='PLAY', bg=WHITE, fg=BLACK,
                                 font=FONTS[25],
-                                command=lambda: controller.show_frame("Main")
+                                command=play_game
                                 )
+        play_button.config(state="disabled")
         play_button.grid(padx=2, pady=2)
 
         # EXIT GAME BUTTON
@@ -161,9 +186,10 @@ class Startup(tk.Frame):
 
 
 class Main(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+    def __init__(self, parent, controller, handle=None):
+        super().__init__(parent)
         self.controller = controller
+        self.__request = handle
 
         bg_frame = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
         bg_frame.grid(padx=75, pady=(75, 120))

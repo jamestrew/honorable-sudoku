@@ -6,7 +6,7 @@ import sys
 
 class WidgetDisplay(tk.Tk, View):
 
-    def __init__(self, handle=None):
+    def __init__(self, handle=None, *args, **kwargs):
         super().__init__()
         self.__request = handle
 
@@ -16,11 +16,11 @@ class WidgetDisplay(tk.Tk, View):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for page in (Startup, Main):
-            page_name = page.__name__
-            frame = page(parent=container, controller=self, handle=self.__request)
-            self.frames[page_name] = frame
-            frame.grid(row=0, column=0, sticky='ns')
+        self.frames["Startup"] = Startup(parent=container, controller=self, handle=self.__request)
+        self.frames["Main"] = Main(parent=container, controller=self, handle=self.__request)
+
+        self.frames["Startup"].grid(row=0, column=0, sticky='ns')
+        self.frames["Main"].grid(row=0, column=0, sticky='ns')
 
         self.show_frame("Startup")
 
@@ -28,6 +28,9 @@ class WidgetDisplay(tk.Tk, View):
         ''' Show a frame for a given page name'''
         frame = self.frames[page_name]
         frame.tkraise()
+
+    def get_page(self, page_class):
+        return self.frames[page_class]
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
@@ -52,7 +55,7 @@ class WidgetDisplay(tk.Tk, View):
         self.__request.gamemode_update(self.__accumulator)
 
 
-class Startup(tk.Frame):
+class Startup(tk.Frame, View):
     '''
     Display for the Startup. Shown first first game is run.
     Enables the selection of gamemode and puzzle type/difficulty.
@@ -84,11 +87,7 @@ class Startup(tk.Frame):
 
         # GAMEMODE SELECT
         def set_gamemode(mode):
-            '''
-            Incomplete function
-            Raises/sinks button
-            Implement: pass gamemode
-            '''
+            ''' Configure buttons and sets gamemode '''
             self.gamemode = mode
             computer_button.configure(relief='raised')
             user_button.configure(relief='raised')
@@ -115,11 +114,7 @@ class Startup(tk.Frame):
 
         # DIFFICULTY SELECT
         def set_difficulty(diff):
-            '''
-            Incomplete function
-            Raises/sinks button
-            Implement: pass difficulty
-            '''
+            ''' Configures buttons and sets difficulty '''
             easy_button.configure(relief='raised')
             hard_button.configure(relief='raised')
             magic_button.configure(relief='raised')
@@ -165,6 +160,8 @@ class Startup(tk.Frame):
             self.__request.gamemode_update(self.gamemode)
             self.__request.gameboard_update(self.difficulty)
 
+            page = self.controller.get_page("Main")
+            page.init_board()
             controller.show_frame("Main")
 
         def check_play():
@@ -185,8 +182,12 @@ class Startup(tk.Frame):
                                 )
         kill_button.grid(pady=(150, 2))
 
+    # METHODS ( PUBLIC ):
+    def notify(self, x, y, val, /):
+        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")
 
-class Main(tk.Frame):
+
+class Main(tk.Frame, View):
     def __init__(self, parent, controller, handle=None):
         super().__init__(parent)
         self.controller = controller
@@ -196,12 +197,12 @@ class Main(tk.Frame):
         bg_frame.grid(padx=75, pady=(75, 120))
 
         self.cells = []
-        for i in range(9):
+        for i in range(DIM):
             row = []
             yborder = 0.5
             if i % 3 == 0 and i != 0:
                 yborder = 5
-            for j in range(9):
+            for j in range(DIM):
                 xborder = 0.5
                 if j % 3 == 0 and j != 0:
                     xborder = 5
@@ -211,10 +212,7 @@ class Main(tk.Frame):
                                 padx=(xborder, 0.5),
                                 pady=(yborder, 0.5)
                                 )
-                cell_number = tk.Label(bg_frame, bg=WHITE, fg=NUMS,
-                                       text=i,
-                                       font=FONTS[20],
-                                       )
+                cell_number = tk.Label(bg_frame, bg=WHITE)
                 cell_number.grid(row=i, column=j)
                 cell_data = {"number": cell_number}
                 row.append(cell_data)
@@ -225,3 +223,19 @@ class Main(tk.Frame):
                                 command=lambda: controller.show_frame("Startup")
                                 )
         exit_button.place(x=75, y=5)
+
+    def init_board(self):
+        self.game = self.__request.get_puzzle()
+        for i in range(9):
+            for j in range(9):
+                if self.game[i, j] != 0:
+                    cell_val = self.game[i, j]
+                else:
+                    cell_val = ''
+                self.cells[i][j]["number"].configure(bg=WHITE, fg=NUMS,
+                                                     text=cell_val, font=FONTS[20]
+                                                     )
+
+    # METHODS ( PUBLIC ):
+    def notify(self, x, y, val, /):
+        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")

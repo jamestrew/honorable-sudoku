@@ -56,6 +56,18 @@ class Controller(Notification):
         gb = self.__gameboard
         print(f"[Debug] Gamemode updated: {gb}")
 
+        with open(gb, 'r') as f:
+            rows = f.readlines()
+        game_list = []
+        for row in rows:
+            game_list.extend(map(int, row.strip().split()))
+
+        self.reset(game_list)
+        self.__print_puzzle()  # Temporary for debugging purposes
+
+    def get_puzzle(self):
+        return self.__p
+
     # METHODS ( PRIVATE ):
     def __print_puzzle(self):
         print(self.__p)

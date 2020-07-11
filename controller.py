@@ -33,6 +33,11 @@ class Controller(Notification):
         self.__v = WidgetDisplay(handle=self)
         self.__v.mainloop()
 
+        ''' If you play game, and exit game with regular windows close button,
+            TypeError is raised.
+
+            Closing game using the EXIT GAME button in the Startup page doesn't
+        '''
         if isinstance(self.__v, TextDisplay):
             while not(self.__check_win()):
                 # input three numbers (x, y, val)

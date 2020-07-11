@@ -96,7 +96,6 @@ class Startup(tk.Frame):
                 computer_button.configure(relief='sunken')
             else:
                 user_button.configure(relief='sunken')
-            self.__request.gamemode_update(self.gamemode)
             check_play()
 
         mode_frame = tk.Frame(start_frame, bg=WHITE)
@@ -163,6 +162,8 @@ class Startup(tk.Frame):
             easy_button.configure(relief='raised')
             hard_button.configure(relief='raised')
             magic_button.configure(relief='raised')
+            self.__request.gamemode_update(self.gamemode)
+            self.__request.gameboard_update(self.difficulty)
 
             controller.show_frame("Main")
 

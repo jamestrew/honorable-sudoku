@@ -31,12 +31,8 @@ class Controller(Notification):
         start_game() initializes the start of a new Sudoku game.
         """
         self.__v = WidgetDisplay(handle=self)
-        self.__v.mainloop()  # I'm sus about putting this here
-        ''' Since the WidgetDisplay inherits from tk.Tk not tk.Frame,
-            doing self.mainloop() or whatever in WidgetDisplay doesn't work.
+        self.__v.mainloop()
 
-            Maybe there's a workaround or maybe this is fine.
-        '''
         if isinstance(self.__v, TextDisplay):
             while not(self.__check_win()):
                 # input three numbers (x, y, val)
@@ -54,6 +50,11 @@ class Controller(Notification):
         self.__gamemode = state
         gm = self.__gamemode
         print(f"[Debug] Gamemode updated: 0x{hex(gm)[2:].zfill(2).upper()}")
+
+    def gameboard_update(self, state):
+        self.__gameboard = state
+        gb = self.__gameboard
+        print(f"[Debug] Gamemode updated: {gb}")
 
     # METHODS ( PRIVATE ):
     def __print_puzzle(self):

@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from sudoku import Puzzle
+from puzzle import Puzzle
 
 
 class Game(tk.Frame):

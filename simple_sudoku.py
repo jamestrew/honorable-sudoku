@@ -1,4 +1,4 @@
-from sudoku import Puzzle
+from puzzle import Puzzle
 import copy
 
 # User selects difficulty

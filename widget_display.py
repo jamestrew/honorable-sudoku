@@ -140,7 +140,7 @@ class Startup(tk.Frame, View):
             hard_button.configure(relief='raised')
             magic_button.configure(relief='raised')
             self.__request.gamemode_update(self.gamemode)
-            self.__request.gameboard_update(self.difficulty)
+            self.__request.gameboard_init(self.difficulty)
 
             page = self.controller.get_page("Main")
             page.init_board()
@@ -197,7 +197,7 @@ class Main(tk.Frame, View):
                                 )
                 cell_number = tk.Label(bg_frame, bg=WHITE)
                 cell_number.grid(row=i, column=j)
-                cell_data = {"number": cell_number}
+                cell_data = {"frame": cell_frame, "number": cell_number}
                 row.append(cell_data)
             self.cells.append(row)
 
@@ -210,16 +210,70 @@ class Main(tk.Frame, View):
     def init_board(self):
         ''' Populate blank grid with new puzzle '''
         self.game = self.__request.get_puzzle()
+        self.perm_cells = []  # store index of all permanent cells
         for i in range(9):
             for j in range(9):
-                if self.game[i, j] != 0:
+                if self.game[i, j] != 0:  # permanent cell
                     cell_val = self.game[i, j]
+                    self.perm_cells.append((i, j))  # store tuple coord of all permanent cells
                 else:
                     cell_val = ''
                 self.cells[i][j]["number"].configure(bg=WHITE, fg=NUMS,
                                                      text=cell_val, font=FONTS[20]
                                                      )
+        self.play()
+
+    def play(self):
+        ''' set up binds and init coordinates/value for play '''
+        self.controller.bind("<Button-1>", self.click)  # binds M1 to click event
+
+        for i in range(1, 10):
+            self.controller.bind(str(i), self.value)
+
+    def click(self, event):
+        '''
+        Sets clicked cell coordinate based on event.widget (clicked widget).
+        Selected cell is highlighted, previously selected cell de-highlighted
+        '''
+
+        cell_index=str(event.widget)[27:]  # not a fan of this implementation
+        if not cell_index:  # if a non-valid cell is selected (eg. the cell boarders, defaults to (0, 0))
+            self.x = 0
+            self.y = 0
+        else:
+            cell_index=int(cell_index) - 1
+            self.x = cell_index//DIM
+            self.y = cell_index%DIM
+
+        self.change_bg(WHITE)  # De-highlight selected cell
+        self.change_bg(SELECT, [(self.x, self.y)])  # Highlight selected cell
+
+    def value(self, event):
+        self.cell_value = int(event.char)
+
+    def change_bg(self, color, coordinates=None):
+        '''
+        Changes the color of the background.
+        By default, changes the bg color of the entire board.
+
+        Provide coordinates as a list(tuple) to change the bg color of a select cells
+        '''
+        if coordinates is None:
+            for i in range(DIM):
+                for j in range(DIM):
+                    self.cells[i][j]["frame"].configure(bg=color)
+                    self.cells[i][j]["number"].configure(bg=color)
+        else:
+            for coord in coordinates:
+                i, j = coord
+                if coord in self.perm_cells:
+                    self.cells[i][j]["frame"].configure(bg=CONF)  # CONF = CONFLICT
+                    self.cells[i][j]["number"].configure(bg=CONF)
+                else:
+                    self.cells[i][j]["frame"].configure(bg=color)
+                    self.cells[i][j]["number"].configure(bg=color)
 
     # METHODS ( PUBLIC ):
+
     def notify(self, x, y, val, /):
         print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")

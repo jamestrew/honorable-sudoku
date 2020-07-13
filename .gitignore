@@ -18,3 +18,7 @@ $RECYCLE.BIN/
 /__pycache__
 *.py[cod]
 *$py.class
+
+
+# Personal files for testing shitty code
+random.py

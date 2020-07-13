@@ -114,7 +114,7 @@ class Startup(tk.Frame, View):
 
         diff_frame = tk.Frame(start_frame, bg=WHITE)
         diff_frame.grid(row=2, padx=5, pady=5)
-        tk.Label(diff_frame, text="MODE: ", bg=WHITE, fg=BLACK,
+        tk.Label(diff_frame, text="DIFFICULTY: ", bg=WHITE, fg=BLACK,
                  font=FONTS[30]
                  ).grid()
 
@@ -179,6 +179,7 @@ class Main(tk.Frame, View):
         bg_frame.grid(padx=75, pady=(75, 120))
 
         self.cells = []
+        # create a blank grid
         for i in range(DIM):
             row = []
             yborder = 0.5
@@ -207,6 +208,7 @@ class Main(tk.Frame, View):
         exit_button.place(x=75, y=5)
 
     def init_board(self):
+        ''' Populate blank grid with new puzzle '''
         self.game = self.__request.get_puzzle()
         for i in range(9):
             for j in range(9):

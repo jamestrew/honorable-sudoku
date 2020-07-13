@@ -201,9 +201,17 @@ class Main(tk.Frame, View):
                 row.append(cell_data)
             self.cells.append(row)
 
+        def return_to_startup():
+            # unbind events
+            self.controller.unbind("<Button-1>")
+            for i in range(1, 10):
+                self.controller.unbind(str(i))
+
+            controller.show_frame("Startup")  # return to startup menu
+
         exit_button = tk.Button(self, text='EXIT', bg=WHITE, fg=BLACK,
                                 font=FONTS[25],
-                                command=lambda: controller.show_frame("Startup")
+                                command=return_to_startup
                                 )
         exit_button.place(x=75, y=5)
 
@@ -236,8 +244,12 @@ class Main(tk.Frame, View):
         Selected cell is highlighted, previously selected cell de-highlighted
         '''
 
-        cell_index=str(event.widget)[27:]  # not a fan of this implementation
-        if not cell_index:  # if a non-valid cell is selected (eg. the cell boarders, defaults to (0, 0))
+        # filter out all non-valid cell widgets
+        widgetlen = len(str(event.widget))
+        if widgetlen < 26: return
+
+        cell_index=str(event.widget)[27:]
+        if not cell_index:
             self.x = 0
             self.y = 0
         else:
@@ -249,7 +261,8 @@ class Main(tk.Frame, View):
         self.change_bg(SELECT, [(self.x, self.y)])  # Highlight selected cell
 
     def value(self, event):
-        self.cell_value = int(event.char)
+        print(event.char)
+        return int(event.char)
 
     def change_bg(self, color, coordinates=None):
         '''

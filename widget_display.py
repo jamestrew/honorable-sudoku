@@ -217,13 +217,11 @@ class Main(tk.Frame, View):
 
     def init_board(self):
         ''' Populate blank grid with new puzzle '''
-        self.game = self.__request.get_puzzle()
-        self.perm_cells = []  # store index of all permanent cells
+        self.game, self.perm_cells = self.__request.get_puzzle()
         for i in range(9):
             for j in range(9):
-                if self.game[i, j] != 0:  # permanent cell
+                if self.game[i, j] != 0:
                     cell_val = self.game[i, j]
-                    self.perm_cells.append((i, j))  # store tuple coord of all permanent cells
                 else:
                     cell_val = ''
                 self.cells[i][j]["number"].configure(bg=WHITE, fg=NUMS,

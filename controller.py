@@ -74,7 +74,7 @@ class Controller(Notification):
         return self.__p.update(x, y, val)
 
     def get_puzzle(self):
-        return self.__p
+        return (self.__p, self.__p.perm_cells)
 
     # METHODS ( PRIVATE ):
     def __print_puzzle(self):

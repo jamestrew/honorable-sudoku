@@ -173,3 +173,14 @@ class Puzzle(object):
     def complete(self):
         # True if all cells are non-zero (puzzle is complete), otherwise False.
         return self.__remaining_moves == 0
+
+    @property
+    def perm_cells(self):
+        ''' list of cell coordinate tuples  with permanent/set cells '''
+
+        self.__perm_cells = []  # store index of all permanent cells
+        for i in range(DIM):
+            for j in range(DIM):
+                if self[i, j] != 0:
+                    self.__perm_cells.append((i, j))
+        return self.__perm_cells

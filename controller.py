@@ -56,7 +56,7 @@ class Controller(Notification):
         gm = self.__gamemode
         print(f"[Debug] Gamemode updated: 0x{hex(gm)[2:].zfill(2).upper()}")
 
-    def gameboard_update(self, state):
+    def gameboard_init(self, state):
         self.__gameboard = state
         gb = self.__gameboard
         print(f"[Debug] Gamemode updated: {gb}")

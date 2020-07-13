@@ -231,15 +231,18 @@ class Main(tk.Frame, View):
 
     def play(self):
         ''' set up binds and init coordinates/value for play '''
-        self.controller.bind("<Button-1>", self.click)  # binds M1 to click event
+        self.controller.bind("<Button-1>", self.select_cell)  # binds M1 to click event
 
         for i in range(1, 10):
-            self.controller.bind(str(i), self.value)
+            self.controller.bind(str(i), self.try_cell)
 
-    def click(self, event):
+        self.x = None
+        self.y = None
+
+    def select_cell(self, event):
         '''
         Sets clicked cell coordinate based on event.widget (clicked widget).
-        Selected cell is highlighted, previously selected cell de-highlighted
+        Selected cell is highlighted, previously selected cell de-highlighted.
         '''
 
         # filter out all non-valid cell widgets
@@ -258,9 +261,22 @@ class Main(tk.Frame, View):
         self.change_bg(WHITE)  # De-highlight selected cell
         self.change_bg(SELECT, [(self.x, self.y)])  # Highlight selected cell
 
-    def value(self, event):
-        print(event.char)
-        return int(event.char)
+    def try_cell(self, event):
+        '''
+        Given a selected give, enables enter of a number in the cell.
+        If the value is valid, update Puzzle. Otherwise show conflicts.
+        '''
+        value = int(event.char)
+
+        # enter value in to the cell initially
+        if self.x is not None and self.y is not None \
+                and (self.x, self.y) not in self.perm_cells:
+            self.cells[self.x][self.y]["number"].config(fg=BLACK,
+                                                        text=value, font=FONTS[20]
+                                                        )
+        # valid = self.__request.gameboard_update(self.x, self.y, value)
+        # print()
+        # print(self.__request.get_puzzle())
 
     def change_bg(self, color, coordinates=None):
         '''

@@ -6,11 +6,11 @@ print("Select difficulty: \nEasy\nHard\nMagic\n")
 diff = input()
 
 if diff == "Easy":
-    fname = "easy.txt"
+    fname = "Boards/easy.txt"
 elif diff == "Hard":
-    fname = "hard.txt"
+    fname = "Boards/hard.txt"
 elif diff == "Magic":
-    fname = "magic.txt"
+    fname = "Boards/magic.txt"
 
 
 # # Read game from txt file and create game board

@@ -9,9 +9,15 @@ ROW = 2
 
 
 '''GUI FORMATS'''
+
+# Backgrounds
 WHITE = "#FFFFFF"
+SELECT = "#EBEFC9"
+CONF = "#F98B8B"
+
 BLACK = "#000000"
-NUMS = "#0A3095"
+NUMS = "#0A3095"  # Permanent cell numbers
+
 
 FONTS = {
     55: ("Helvetica", "55", "bold"),

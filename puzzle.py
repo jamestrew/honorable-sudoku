@@ -78,8 +78,8 @@ class Puzzle(object):
             b_nbr = self.__blookup(i)
             result.append(
                 # |{non-empty cells}| == |{unique cells}\{0}|
-                len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and
-                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and
+                len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
+                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
                 len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
             )
         return all(result)
@@ -145,8 +145,8 @@ class Puzzle(object):
         """
         if self[x, y]==val: return False
 
-        v_nbr = self.neighbor(x, COL)
-        h_nbr = self.neighbor(y, ROW)
+        v_nbr = self.neighbor(y, COL)
+        h_nbr = self.neighbor(x, ROW)
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
         v_nbr[y] = h_nbr[x] = b_nbr[3*(y%3) + x%3] = val  # peek-update
 
@@ -154,7 +154,7 @@ class Puzzle(object):
             len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
             len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
         if valid:
-            self.__grid[DIM*y + x] = val
+            self.__grid[DIM*x + y] = val
             self.__remaining_moves += 1 if val == 0 else -1
             if self.__notif: self.__notif.notify(x, y, val)
         return valid

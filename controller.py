@@ -70,6 +70,9 @@ class Controller(Notification):
         self.reset(game_list)
         self.__print_puzzle()  # Temporary for debugging purposes
 
+    def gameboard_update(self, x, y, val):
+        return self.__p.update(x, y, val)
+
     def get_puzzle(self):
         return self.__p
 
@@ -77,5 +80,5 @@ class Controller(Notification):
     def __print_puzzle(self):
         print(self.__p)
 
-    def __check_win(self):
+    def check_win(self):
         return self.__p.complete

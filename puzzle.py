@@ -167,24 +167,14 @@ class Puzzle(object):
         h_nbr = self.neighbor(x, ROW)
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
 
-        # Peek-update
+        # conflict checks
         try:
-            c = Cell(val)
-            v_nbr.pop(x)
-            v_nbr.append(c)
-            h_nbr.pop(y)
-            h_nbr.append(c)
-            b_nbr.pop(DIM//3*(x%3) + y%3)
-            b_nbr.append(c)
-            del c
-        except AttributeError as err:
-            print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
-            return False
+            vindex = v_nbr.index(val)
+            hindex = h_nbr.index(val)
+            bindex = b_nbr.index(val)
+        except ValueError:
+            pass
 
-        # and-map of indexed col, row, and blk distinctness
-        valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
-            len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
-            len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
         if valid:
             self.__grid[DIM*x + y].update(val)  # set value
             self.__remaining_moves += 1 if val == 0 else -1

@@ -100,6 +100,9 @@ class Main(tk.Frame, WidgetDisplay):
             )
         valid = self.__root_instance.callback(gameboard_update=(x, y, value))
 
+        if isinstance(valid, list):
+            self.change_bg(CONF, valid)
+
     def change_bg(self, color, coordinates=None):
         """
         Changes the color of the background.

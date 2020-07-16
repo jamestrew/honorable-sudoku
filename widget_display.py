@@ -50,7 +50,7 @@ class WidgetDisplay(tk.Tk, View):
         return self.__frames[page_name]
 
     def notify(self, x, y, val, /):
-        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")
+        print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
 
 from Frames.startup import Startup  # noqa

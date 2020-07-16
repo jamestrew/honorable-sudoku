@@ -164,11 +164,17 @@ class Puzzle(object):
         v_nbr = self.neighbor(y, COL)
         h_nbr = self.neighbor(x, ROW)
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
+
         # Peek-update
         try:
-            v_nbr[x].update(val)
-            h_nbr[y].update(val)
-            b_nbr[DIM//3*(x%3) + y%3].update(val)
+            c = Cell(val)
+            v_nbr.pop(x)
+            v_nbr.append(c)
+            h_nbr.pop(y)
+            h_nbr.append(c)
+            b_nbr.pop(DIM//3*(x%3) + y%3)
+            b_nbr.append(c)
+            del c
         except AttributeError as err:
             print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
             return False
@@ -181,8 +187,6 @@ class Puzzle(object):
             self.__grid[DIM*x + y].update(val)  # set value
             self.__remaining_moves += 1 if val == 0 else -1
             if self.__notif: self.__notif.notify(x, y, val)
-        print()
-        print(self)
         return valid
 
     @property

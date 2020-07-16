@@ -160,6 +160,8 @@ class Puzzle(object):
         # An unchanged update is considered invalid
         if self[x, y]==val: return False
 
+        self.__conflicts = []  # list(tuple) of coords of cells that conflict (max len = 3)
+
         # Find neighbor at specified (x,y) of grid
         v_nbr = self.neighbor(y, COL)
         h_nbr = self.neighbor(x, ROW)

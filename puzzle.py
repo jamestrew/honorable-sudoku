@@ -168,18 +168,28 @@ class Puzzle(object):
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
 
         # conflict checks
-        try:
-            vindex = v_nbr.index(val)
-            hindex = h_nbr.index(val)
-            bindex = b_nbr.index(val)
-        except ValueError:
-            pass
+        conf_ind = {}
+        for i, func in zip(['v', 'h', 'b'], [v_nbr, h_nbr, b_nbr]):
+            try:
+                conf_ind[i] = func.index(val)
+            except ValueError:
+                pass
+
+        valid = True if len(conf_ind) == 0 else False  # Conflict found
 
         if valid:
             self.__grid[DIM*x + y].update(val)  # set value
             self.__remaining_moves += 1 if val == 0 else -1
             if self.__notif: self.__notif.notify(x, y, val)
-        return valid
+        else:
+            for key, index in conf_ind.items():
+                if key == 'v':
+                    self.__conflicts.append((index, y))
+                if key == 'h':
+                    self.__conflicts.append((x, index))
+                if key == 'b':
+                    self.__conflicts.append((index//3, index%3))
+        return valid if valid else self.__conflicts
 
     @property
     def remaining_moves(self):
@@ -224,3 +234,7 @@ class Puzzle(object):
     @property
     def init_iterator(self):
         return next(self.__init_generate)
+
+    @property
+    def conflicts(self):
+        return self.__conflicts

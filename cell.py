@@ -19,20 +19,20 @@ class Cell(object):
             self.__tag = ORIGIN if value>0 else NORMAL
 
     # ( OVERRIDES ):
-    def __lt__(self, other): return self.__value<other
-    def __gt__(self, other): return self.__value>other
-    def __le__(self, other): return self.__value<=other
-    def __ge__(self, other): return self.__value>=other
-    def __eq__(self, other): return self.__value==other
-    def __ne__(self, other): return self.__value!=other
+    def __lt__(self, other): return self.__value<other  # noqa
+    def __gt__(self, other): return self.__value>other  # noqa
+    def __le__(self, other): return self.__value<=other  # noqa
+    def __ge__(self, other): return self.__value>=other  # noqa
+    def __eq__(self, other): return self.__value==other  # noqa
+    def __ne__(self, other): return self.__value!=other  # noqa
 
-    def __mod__(self, other): return self.__value%other
-    def __int__(self): return self.__value
+    def __mod__(self, other): return self.__value%other  # noqa
+    def __int__(self): return self.__value  # noqa
 
     def __hash__(self):
         return hash(self.__value)
 
-    def __str__(self): return f"{self.__value}"
+    def __str__(self): return f"{self.__value}"  # noqa
 
     def __repr__(self):
         lock = {NORMAL: "unlocked"}.get(self.__tag, "locked")

@@ -100,15 +100,15 @@ class Puzzle(object):
 
     def __vlookup(self, index, /):
         """
-        vlookup(index) returns a ROW at the specified ROW-index.
-            index follows 0..DIM convention (LHS to RHS)
+        vlookup(index) returns a COL at the specified COL-index.
+            index follows 0..DIM convention (TOP to BOT)
         """
         return self.__grid[index:: DIM]
 
     def __hlookup(self, index, /):
         """
-        hlookup(index) returns a COL at the specified COL-index.
-            index follows 0..DIM convention (TOP to BOT)
+        hlookup(index) returns a ROW at the specified ROW-index.
+            index follows 0..DIM convention (LHS to RHS)
         """
         return self.__grid[index*DIM: DIM*(index+1)]
 
@@ -166,9 +166,9 @@ class Puzzle(object):
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
         # Peek-update
         try:
-            v_nbr[y].update(val)
-            h_nbr[x].update(val)
-            b_nbr[DIM//3*(y%3) + x%3].update(val)
+            v_nbr[x].update(val)
+            h_nbr[y].update(val)
+            b_nbr[DIM//3*(x%3) + y%3].update(val)
         except AttributeError as err:
             print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
             return False
@@ -181,6 +181,8 @@ class Puzzle(object):
             self.__grid[DIM*x + y].update(val)  # set value
             self.__remaining_moves += 1 if val == 0 else -1
             if self.__notif: self.__notif.notify(x, y, val)
+        print()
+        print(self)
         return valid
 
     @property
@@ -221,7 +223,7 @@ class Puzzle(object):
                 c = next(self.__permanent_cell)
             except StopIteration:
                 self.__permanent_cell = self.permanent_iterator
-        return c%DIM, c//DIM
+        return c//DIM, c%DIM
 
     @property
     def init_iterator(self):

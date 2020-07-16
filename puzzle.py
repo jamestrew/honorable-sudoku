@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from cell import Cell
+from functools import reduce
 from operator import concat
 from resource import *
-from functools import reduce
 
 
 class Notification(metaclass=ABCMeta):
@@ -10,12 +11,11 @@ class Notification(metaclass=ABCMeta):
 
 
 class Puzzle(object):
-    """ Sudoku::MODEL """
+    """ Sudoku::Puzzle """
     __grid = []         # grid: Z^1 array for board
-    __perm_cells = []     # original grid's non-empty cells
-    __remaining_moves = 0
+    __remaining_moves = 0  # number of moves until complete
 
-    def __init__(self, grid=None, handle=None):
+    def __init__(self, grid=None, original=None, handle=None):
         """
         (Default/Copy) constructor
             - Copies grid to self when given
@@ -25,30 +25,43 @@ class Puzzle(object):
             - Optional grid arg is of <class 'Puzzle'> or <class 'List>
             - Given grid follows classic logical rules of a Sudoku puzzle
         """
-        self.__notif = handle
+        self.__notif = handle  # ref back to Controller for notify
 
+        def cell_parser(m_src):
+            """
+            cell_parser(m_src) returns a list of Cells, representing the grid,
+                from the given mutable source (m_src)
+            """
+            try:  # ASSERTS:
+                # Check for valid dimensions of given grid
+                if len(m_src) != DIM*DIM: raise ValueError
+                return list(map(Cell, m_src))
+            except (AttributeError, TypeError, ValueError):
+                print(f"[Debug] the puzzle could not be parsed.")
+                return None
+
+        # STAGE 1 - generate flat container for puzzle grid
         if grid is None:  # fill empty grid
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
             self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
             self.__grid = reduce(concat, self.__grid, [])  # noqa
         elif isinstance(grid, list):    # copy init
-            self.__grid = [cp%(DIM+1) for cp in grid]
-        else:
+            self.__grid = cell_parser(grid)
+        else:  # the given grid is type-checked; otherwise, undefined behavior
             raise TypeError(
                 f"expected {type(self)} or {type([])}, but found {type(grid)}"
             )
+        # STAGE 2 - validation of given grid
         if not self.__validate():
             del self  # that's unfortunate
             raise ValueError(
                 f"validation failed."
             )
-        else:
-            for x in range(DIM):
-                for y in range(DIM):
-                    if self.__grid[DIM*y + x] > 0:
-                        self.__perm_cells.append((x, y))
-                        self.__remaining_moves += 1
+        else:  # passed validation
+            self.__remaining_moves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
+            self.__permanent_cell = self.permanent_iterator
+            self.__init_generate = (self.__grid[i] for i in range(DIM*DIM))
 
     # ( OVERRIDES ):
     def __str__(self):
@@ -59,7 +72,8 @@ class Puzzle(object):
         return self.__grid[DIM*key[0] + key[1]]
 
     def __setitem__(self, key, val):
-        self.update(key[1], key[0], val)
+        if not self.update(key[1], key[0], val):
+            raise ValueError
 
     # METHODS ( PRIVATE ):
     def __validate(self):
@@ -70,17 +84,13 @@ class Puzzle(object):
             - Each cell value is of <class: 'int'>
             - BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty)
         """
-        try:
-            if len(self.__grid) != DIM*DIM: raise ValueError
-            list(map(int, self.__grid))
-        except (TypeError, ValueError):
-            return False
-        result = []  # distinct-check flags
+        if self.__grid is None: return False  # parsing stage failed
+        result = []  # distinctness check
         for i in range(DIM):
-            v_nbr = self.__vlookup(i)
-            h_nbr = self.__hlookup(i)
-            b_nbr = self.__blookup(i)
-            result.append(
+            v_nbr = self.__vlookup(i)  # column
+            h_nbr = self.__hlookup(i)  # row
+            b_nbr = self.__blookup(i)  # block
+            result.append(  # and-map of indexed col, row, and blk distinctness
                 # |{non-empty cells}| == |{unique cells}\{0}|
                 len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
                 len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
@@ -109,7 +119,7 @@ class Puzzle(object):
         """
         offset = 2*DIM*(index//3)  # skip to next row of submatrices
         n = DIM//3  # submatrix size (n*n)
-        blk_nbr = (
+        blk_nbr =(  # expected: DIM/3 x DIM/3 submatrix
             self.__grid[(n*k)+offset: n*(k+1)+offset]
             for k in range(index, (2*n+index)+1, n)
         )
@@ -147,18 +157,28 @@ class Puzzle(object):
             Requires: (int)x,(int)y is in range[0..DIM-1]
             Affects: grid changes at the specified index with the given val
         """
+        # An unchanged update is considered invalid
         if self[x, y]==val: return False
 
+        # Find neighbor at specified (x,y) of grid
         v_nbr = self.neighbor(y, COL)
         h_nbr = self.neighbor(x, ROW)
         b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
-        v_nbr[y] = h_nbr[x] = b_nbr[DIM//3*(y%3) + x%3] = val  # peek-update
+        # Peek-update
+        try:
+            v_nbr[y].update(val)
+            h_nbr[x].update(val)
+            b_nbr[DIM//3*(y%3) + x%3].update(val)
+        except AttributeError as err:
+            print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
+            return False
 
+        # and-map of indexed col, row, and blk distinctness
         valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
             len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
             len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
         if valid:
-            self.__grid[DIM*x + y] = val
+            self.__grid[DIM*x + y].update(val)  # set value
             self.__remaining_moves += 1 if val == 0 else -1
             if self.__notif: self.__notif.notify(x, y, val)
         return valid
@@ -179,6 +199,30 @@ class Puzzle(object):
         return self.__remaining_moves == 0
 
     @property
-    def perm_cells(self):
-        """ List of cell coordinates with permanent/set cells """
-        return self.__perm_cells
+    def permanent_iterator(self):
+        """
+        Returns a generator for all the cell indices that were non-empty in
+            the original puzzle.
+        """
+        return (i for i in range(DIM*DIM) if self.__grid[i].locked)
+
+    @property
+    def permanent_cell(self):
+        """
+        Returns a single coordinate on the puzzle board that represents a cell
+            from the original puzzle; therefore, being locked/permanent.
+
+            This operation is cyclic and will loop back to the first cell when
+            running into a StopIteration.
+        """
+        c = None
+        while c is None:  # cyclic iterator
+            try:
+                c = next(self.__permanent_cell)
+            except StopIteration:
+                self.__permanent_cell = self.permanent_iterator
+        return c%DIM, c//DIM
+
+    @property
+    def init_iterator(self):
+        return next(self.__init_generate)

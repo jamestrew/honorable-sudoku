@@ -107,7 +107,7 @@ class Startup(tk.Frame, WidgetDisplay):
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
-        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")
+        print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
     def set_gamemode(self, gamemode, parent=None):
         """ Configures buttons and sets gamemode """

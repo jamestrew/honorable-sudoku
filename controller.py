@@ -85,7 +85,7 @@ class Controller(Notification):
                     self.__p.init_iterator for _ in range(DIM*DIM)
                 ]
             if n == 1:
-                return self.__p.init_iterator if n>0 else None
+                return self.__p.init_iterator if n>0 else None  # checking if n>0 when n = 1 seems redundant (?)
             if n > 1:
                 return [self.__p.init_iterator for _ in range(n)]
             else:

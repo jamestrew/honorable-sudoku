@@ -17,7 +17,7 @@ class WidgetDisplay(tk.Tk, View):
         # key=page_name, val=page_object
         self.__frames = {  # Instantiate all frames
             "Startup": Startup(root_container, self),
-            "Main":    Main(root_container, self)
+            "Main":    Main(root_container, self)  # noqa
         }
         # Formatting
         self.get_page("Startup").grid(row=0, column=0, sticky="ns")

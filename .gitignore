@@ -16,6 +16,7 @@ $RECYCLE.BIN/
 # pycharm byte-code
 /.idea
 /__pycache__
+/tests
 *.py[cod]
 *$py.class
 

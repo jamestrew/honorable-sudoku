@@ -76,8 +76,8 @@ class Main(tk.Frame, WidgetDisplay):
         widgetlen = len(str(event.widget))
         if widgetlen < 26: return
 
-        cell_index = str(event.widget)[27:]
-        if not cell_index:
+        cell_index = str(event.widget)[27:]  # gets the cell widget number
+        if not cell_index:  # first cell widget is not numbered
             self.__selection = (0, 0)
         else:
             cell_index = int(cell_index) - 1
@@ -127,4 +127,4 @@ class Main(tk.Frame, WidgetDisplay):
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
-        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")
+        print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")

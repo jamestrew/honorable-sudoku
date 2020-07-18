@@ -41,6 +41,7 @@ class Startup(tk.Frame, WidgetDisplay):
         )
         title.grid(padx=10, pady=10)
 
+        # MODE
         mode_frame = tk.Frame(start_frame, bg=WHITE)
         tk.Label(  # MODE HEADER
             mode_frame, text="MODE: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
@@ -53,6 +54,7 @@ class Startup(tk.Frame, WidgetDisplay):
         self.__btn_modes[USER_PLAY].grid(row=0, column=1, padx=2, pady=2)
         self.__btn_modes[COMP_PLAY].grid(row=0, column=2, padx=2, pady=2)
 
+        # DIFFICULTY
         diff_frame = tk.Frame(start_frame, bg=WHITE)
         tk.Label(
             diff_frame, text="DIFFICULTY: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
@@ -67,10 +69,10 @@ class Startup(tk.Frame, WidgetDisplay):
         self.__btn_diffs[HARD].grid(row=0, column=2, padx=2, pady=2)
         self.__btn_diffs[MAGI].grid(row=0, column=3, padx=2, pady=2)
 
-        tmp = [*list(self.__btn_modes.values()), *list(self.__btn_diffs.values())]
+        option_btns = [*list(self.__btn_modes.values()), *list(self.__btn_diffs.values())]
         play_button = tk.Button(
             start_frame, text='PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25], state="disabled",
-            command=lambda: self.play_game(tmp)
+            command=lambda: self.play_game(option_btns)
         )
         play_button.grid(padx=2, pady=2)
         self.__btn_start = play_button
@@ -105,7 +107,7 @@ class Startup(tk.Frame, WidgetDisplay):
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
-        print(f"[Debug] {type(self)}: successfully changed (col:{x}, row:{y}) to {val}.")
+        print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
     def set_gamemode(self, gamemode, parent=None):
         """ Configures buttons and sets gamemode """

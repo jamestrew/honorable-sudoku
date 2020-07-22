@@ -2,6 +2,7 @@
 """ PUZZLE CONSTANTS """
 # N, where the sudoku model (Puzzle) is an N*N matrix
 DIM = 9
+B_DIM = DIM//3
 
 # Neighbor look-up codes
 BLK = 0

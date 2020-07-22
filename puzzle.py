@@ -157,39 +157,30 @@ class Puzzle(object):
             Requires: (int)x,(int)y is in range[0..DIM-1]
             Affects: grid changes at the specified index with the given val
         """
+        valid = (val==0)
         # An unchanged update is considered invalid
-        if self[x, y]==val: return False
+        if 0 < val != self[x, y]:
+            # Find neighbor at specified (x,y) of grid
+            v_nbr = list(map(int, self.neighbor(y, COL)))
+            h_nbr = list(map(int, self.neighbor(x, ROW)))
+            b_nbr = list(map(int, self.neighbor(B_DIM*(x//3) + y//3)))
+            v_nbr[x] = h_nbr[y] = b_nbr[B_DIM*(x%3) + y%3] = val  # peek-update
 
-        self.__conflicts = []  # list(tuple) of coords of cells that conflict (max len = 3)
-
-        # Find neighbor at specified (x,y) of grid
-        v_nbr = self.neighbor(y, COL)
-        h_nbr = self.neighbor(x, ROW)
-        b_nbr = self.neighbor(DIM//3*(y//3) + x//3)
-
-        # conflict checks
-        conf_ind = {}
-        for i, func in zip(['v', 'h', 'b'], [v_nbr, h_nbr, b_nbr]):
-            try:
-                conf_ind[i] = func.index(val)
-            except ValueError:
-                pass
-
-        valid = True if len(conf_ind) == 0 else False  # Conflict found
+            # and-map of indexed col, row, and blk distinctness
+            valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
+                len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
+                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
 
         if valid:
-            self.__grid[DIM*x + y].update(val)  # set value
-            self.__remaining_moves += 1 if val == 0 else -1
-            if self.__notif: self.__notif.notify(x, y, val)
-        else:
-            for key, index in conf_ind.items():
-                if key == 'v':
-                    self.__conflicts.append((index, y))
-                if key == 'h':
-                    self.__conflicts.append((x, index))
-                if key == 'b':
-                    self.__conflicts.append((index//3, index%3))
-        return valid if valid else self.__conflicts
+            try:
+                self.__grid[DIM * x + y].update(val)  # set value
+            except AttributeError as err:
+                print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
+                return False
+            else:
+                self.__remaining_moves += 1 if val == 0 else -1
+                if self.__notif: self.__notif.notify(x, y, val)
+        return valid
 
     @property
     def remaining_moves(self):
@@ -234,7 +225,3 @@ class Puzzle(object):
     @property
     def init_iterator(self):
         return next(self.__init_generate)
-
-    @property
-    def conflicts(self):
-        return self.__conflicts

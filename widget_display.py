@@ -35,6 +35,9 @@ class WidgetDisplay(tk.Tk, View):
                 return self.__request.init_n(v)
             elif k=="permanent_cell" and isinstance(v,int):
                 return self.__request.perm_n(v)
+            elif k=="fetch_conflicts" and isinstance(v, tuple) and len(v)==3:
+                x,y,val = v
+                return self.__request.fetch_conflicts(x, y, val)
             elif k=="gameboard_update" and isinstance(v, tuple) and len(v)==3:
                 x,y,val = v
                 return self.__request.gameboard_update(x, y, val)
@@ -53,5 +56,5 @@ class WidgetDisplay(tk.Tk, View):
         print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
 
-from Frames.startup import Startup  # noqa
-from Frames.menu import Main        # noqa
+from Frames.menu import Startup  # noqa
+from Frames.game import Main     # noqa

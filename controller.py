@@ -16,7 +16,7 @@ class Controller(Notification):
         notify(x, y, val) sends an update-cmd for the given x,y-indices of the View.
             val is fwd'd to View upon successful update to the main Puzzle.
         """
-        self.__v.notify(x, y, val)
+        if self.__v: self.__v.notify(x, y, val)
         print(f"[Debug] Controller has notified View.")
 
     def start_game(self):
@@ -74,6 +74,27 @@ class Controller(Notification):
         finally:
             self.__p = Puzzle(flat_grid, handle=self)
             self.print_puzzle()
+
+    def fetch_conflicts(self, x, y, val):
+        conflicts = []  # list(pair) of coordinates that conflict with update.
+
+        if val == 0: return set(conflicts)  # clearing a cell cannot cause conflict
+        else:
+            config_index = {  # { config_key: DIM config }
+                'v': self.__p.neighbor(y, COL),  # ROW
+                'h': self.__p.neighbor(x, ROW),  # COL
+                'b': self.__p.neighbor(DIM//3*(y//3) + x//3)  # BLK
+            }
+        for (lookup_type, config) in config_index.items():
+            config = list(map(int, config))
+            if val in config:
+                offset = config.index(val)
+                conflicts.append({
+                    'v': (offset, y),
+                    'h': (x, offset),
+                    'b': (x//B_DIM + offset//B_DIM, y//B_DIM + offset%B_DIM)
+                }.get(lookup_type))
+        return set(conflicts)
 
     def gameboard_update(self, x, y, val):
         return self.__p.update(x, y, val)

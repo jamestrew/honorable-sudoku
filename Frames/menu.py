@@ -1,130 +1,143 @@
+import sys
 from resource import *
 from widget_display import WidgetDisplay
 import tkinter as tk
 
 
-class Main(tk.Frame, WidgetDisplay):
-    __grid = []
-    __selection = None
+class Startup(tk.Frame, WidgetDisplay):
+    """
+    Sudoku::WidgetDisplay::Startup
+        Display for the Startup screen. Always shown first when WidgetDisplay
+        is instantiated. It enables the selection of gamemode and difficulty.
+        Requires:
+        - To proceed using PLAY command, user must select gamemode and difficulty.
+        Affects:
+        - Controller.gamemode
+        - Controller.difficulty
+    """
+    # selection within groups specified below
+    __gamemode = None
+    __difficulty = None
+
+    __btn_modes = None  # modes group
+    __btn_diffs = None  # difficulty group
+    __btn_start = None  # start button
 
     def __init__(self, root, instance):
         super().__init__(root)
         self.__root_instance = instance
 
         # background
-        bg_frame = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
-        bg_frame.grid(padx=75, pady=(75, 120))
+        bg = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
+        bg.grid(padx=75, pady=(75, 120))
+        bg.grid_rowconfigure(0, weight=1)
+        bg.grid_columnconfigure(0, weight=1)
 
-        # create a blank grid
-        for x in range(DIM):
-            row = []
-            yborder = 5.0 if (x%3==0 and x!=0) else 0.5
-            for y in range(DIM):
-                xborder = 5.0 if (y%3==0 and y!=0) else 0.5
+        start_frame = tk.Frame(bg, width=675, height=675, bg=WHITE)
+        start_frame.grid()
 
-                cell_frame = tk.Frame(bg_frame, width=75, height=75, bg=WHITE)
-                cell_frame.grid(
-                    row=x, column=y, padx=(xborder, 0.5), pady=(yborder, 0.5)
-                )
-                cell_number = tk.Label(bg_frame, bg=WHITE)
-                cell_number.grid(row=x, column=y)
-
-                row.append({
-                    "frm": cell_frame,
-                    "num": cell_number
-                })
-            self.__grid.append(row)
-
-        def return_to_startup():
-            # unbind events
-            self.__root_instance.unbind("<Button-1>")
-            for i in range(1, 10):
-                self.__root_instance.unbind(str(i))
-
-            self.__root_instance.show_frame("Startup")  # return to startup menu
-
-        exit_button = tk.Button(
-            self, text='EXIT', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25],
-            command=return_to_startup
+        title = tk.Label(
+            start_frame, bg=WHITE, fg=BLACK, text="GAYDOKU", font=CMD_HELVETICA[55]
         )
-        exit_button.place(x=75, y=5)
+        title.grid(padx=10, pady=10)
 
-    def init_board(self):
-        """ Populate blank grid with new puzzle """
-        self.perm_cells = self.__root_instance.callback(permanent_cell=0)
-        for i in range(DIM*DIM):
-            value = self.__root_instance.callback(init_iterator=1)
-            value = "" if value == 0 else str(value)
-            self.__grid[i//DIM][i%DIM]["num"].config(
-                bg=WHITE, fg=NUMS, text=value, font=CMD_HELVETICA[20]
-            )
-        self.play()
+        # MODE
+        mode_frame = tk.Frame(start_frame, bg=WHITE)
+        tk.Label(  # MODE HEADER
+            mode_frame, text="MODE: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
+        ).grid()
+        self.__btn_modes = {
+            USER_PLAY: tk.Button(mode_frame, text='USER PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
+            COMP_PLAY: tk.Button(mode_frame, text='COMP PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25])
+        }
+        mode_frame.grid(row=1, padx=5, pady=5)
+        self.__btn_modes[USER_PLAY].grid(row=0, column=1, padx=2, pady=2)
+        self.__btn_modes[COMP_PLAY].grid(row=0, column=2, padx=2, pady=2)
 
-    def play(self):
-        """ set up binds and init coordinates/value for play """
-        self.__root_instance.bind("<Button-1>", self.select_cell)  # binds M1 to click event
-        for i in range(1, 10):
-            self.__root_instance.bind(str(i), self.try_cell)
-        self.__selection = None
+        # DIFFICULTY
+        diff_frame = tk.Frame(start_frame, bg=WHITE)
+        tk.Label(
+            diff_frame, text="DIFFICULTY: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
+        ).grid()
+        self.__btn_diffs = {
+            EASY: tk.Button(diff_frame, text='EASY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
+            HARD: tk.Button(diff_frame, text='HARD', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
+            MAGI: tk.Button(diff_frame, text='MAGIC', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25])
+        }
+        diff_frame.grid(row=2, padx=5, pady=5)
+        self.__btn_diffs[EASY].grid(row=0, column=1, padx=2, pady=2)
+        self.__btn_diffs[HARD].grid(row=0, column=2, padx=2, pady=2)
+        self.__btn_diffs[MAGI].grid(row=0, column=3, padx=2, pady=2)
 
-    def select_cell(self, event):
-        """
-        Sets clicked cell coordinate based on event.widget (clicked widget).
-        Selected cell is highlighted, previously selected cell de-highlighted.
-        """
-        # filter out all non-valid cell widgets
-        widgetlen = len(str(event.widget))
-        if widgetlen < 26: return
+        option_btns = [*list(self.__btn_modes.values()), *list(self.__btn_diffs.values())]
+        play_button = tk.Button(
+            start_frame, text='PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25], state="disabled",
+            command=lambda: self.play_game(option_btns)
+        )
+        play_button.grid(padx=2, pady=2)
+        self.__btn_start = play_button
 
-        cell_index = str(event.widget)[27:]  # gets the cell widget number
-        if not cell_index:  # first cell widget is not numbered
-            self.__selection = (0, 0)
-        else:
-            cell_index = int(cell_index) - 1
-            self.__selection = (cell_index//DIM, cell_index%DIM)
-        self.change_bg(WHITE)  # De-select cell
-        self.change_bg(SELECT, [self.__selection])  # Highlight selected cell
+        self.__btn_diffs[EASY].config(command=lambda: [
+            self.set_difficulty(0, list(self.__btn_diffs.values())),
+            self.check_play(self.__btn_start)
+        ])
+        self.__btn_diffs[HARD].config(command=lambda: [
+            self.set_difficulty(1, list(self.__btn_diffs.values())),
+            self.check_play(self.__btn_start)
+        ])
+        self.__btn_diffs[MAGI].config(command=lambda: [
+            self.set_difficulty(2, list(self.__btn_diffs.values())),
+            self.check_play(self.__btn_start)
+        ])
 
-    def try_cell(self, event):
-        """
-        Given a selected give, enables enter of a number in the cell.
-        If the value is valid, update Puzzle. Otherwise show conflicts.
-        """
-        value = int(event.char)
+        self.__btn_modes[USER_PLAY].config(command=lambda: [
+            self.set_gamemode(0, list(self.__btn_modes.values())),
+            self.check_play(self.__btn_start)
+        ])
+        self.__btn_modes[COMP_PLAY].config(command=lambda: [
+            self.set_gamemode(1, list(self.__btn_modes.values())),
+            self.check_play(self.__btn_start)
+        ])
 
-        # enter value in to the cell initially
-        x,y = self.__selection
-        if self.__selection and (x, y) not in self.perm_cells:
-            self.__grid[x][y]["num"].config(
-                fg=BLACK, text=value, font=CMD_HELVETICA[20]
-            )
-        valid = self.__root_instance.callback(gameboard_update=(x, y, value))
-
-        if isinstance(valid, list):
-            self.change_bg(CONF, valid)
-
-    def change_bg(self, color, coordinates=None):
-        """
-        Changes the color of the background.
-        By default, changes the bg color of the entire board.
-
-        Provide coordinates as a list(tuple) to change the bg color of a select cells
-        """
-        if coordinates is None:
-            for i in range(DIM):
-                for j in range(DIM):
-                    self.__grid[i][j]["frm"].configure(bg=color)
-                    self.__grid[i][j]["num"].configure(bg=color)
-        else:
-            for coord in coordinates:
-                i, j = coord
-                if coord in self.perm_cells:
-                    self.__grid[i][j]["frm"].configure(bg=CONF)  # CONF = CONFLICT
-                    self.__grid[i][j]["num"].configure(bg=CONF)
-                else:
-                    self.__grid[i][j]["frm"].configure(bg=color)
-                    self.__grid[i][j]["num"].configure(bg=color)
+        # EXIT GAME BUTTON
+        kill_button = tk.Button(
+            start_frame, text='EXIT GAME', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25], command=sys.exit
+        )
+        kill_button.grid(pady=(150, 2))
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
+
+    def set_gamemode(self, gamemode, parent=None):
+        """ Configures buttons and sets gamemode """
+        self.__gamemode = gamemode
+        self.group_select(gamemode, parent)
+
+    def set_difficulty(self, difficulty, parent=None):
+        """ Configures buttons and sets difficulty """
+        self.__difficulty = difficulty
+        self.group_select(difficulty, parent)
+
+    def check_play(self, play_button=None):
+        """ Enables the PLAY button if gamemode and difficulty are selected """
+        play_button.config(
+            state="disabled"
+            if None in[self.__gamemode, self.__difficulty] else "normal"
+        )
+
+    def play_game(self, buttons):
+        """ Raises all buttons and loads the MAIN game """
+        self.group_select(-1, buttons)
+        self.__root_instance.callback(
+            load_game=(self.__gamemode, self.__difficulty)
+        )
+        page = self.__root_instance.get_page("Main")
+        page.init_board()
+
+        self.__root_instance.show_frame("Main")
+
+    @staticmethod
+    def group_select(select, parent=None):
+        for (i) in range(len(parent)):
+            parent[i].configure(relief="sunken" if select == i else "raised")

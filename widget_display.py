@@ -27,6 +27,17 @@ class WidgetDisplay(tk.Tk, View):
 
     # METHODS ( PUBLIC ):
     def callback(self, *args, **kwargs):
+        """
+        Main access to the Controller instance for requests to mutate Puzzle.
+        Valid callback attributes include all public methods of Controller.
+
+        :raises KeyError: if callback function does not exist
+        :param args: (n/a)
+        :param kwargs: request.keyword(args)
+        :return: the returns of each callback are forwarded
+        """
+        if len(args)>0: raise KeyError(f"callback requires keyword for all requests.")
+
         # callable methods are public attrs of Controller
         valid_call = [fn for fn in dir(self.__request) if fn[:1]!='_']
         rtns = []  # result of callback returns
@@ -39,15 +50,15 @@ class WidgetDisplay(tk.Tk, View):
 
         # ( STAGE 2 - process callback )
         for (fn,params) in kwargs.items():  # callback all
-            # Controller.fn(params)
             if isinstance(params, tuple) or isinstance(params, list):
+                # expansion of multiple arguments
                 result = getattr(self.__request, fn)(*iter(params))
             else:  # at least one argument exists
                 result = getattr(self.__request, fn)(params)
             if not(result is None): rtns.append(result)  # collect all returns
 
         if len(rtns) < 2:
-            # single callback- unwrap return
+            # single callback, unwrap return
             return None if len(rtns)==0 else rtns.pop()
         # multiple callbacks wrapped in list
         return rtns

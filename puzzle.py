@@ -17,20 +17,29 @@ class Puzzle(object):
 
     def __init__(self, grid=None, original=None, handle=None):
         """
-        (Default/Copy) constructor
-            - Copies grid to self when given
-            - Runs board validation on creation of new instance
-            - Instance removed on a non-valid outcome
-            Requires:
-            - Optional grid arg is of <class 'Puzzle'> or <class 'List>
-            - Given grid follows classic logical rules of a Sudoku puzzle
+        (Default/Copy) constructor copies grid to self instance when given.
+        The new instance is validated before finishing initialization, and
+        removed upon failure of validation.
+
+        :type: None if invalid.
+
+        :param grid: list or Puzzle to instantiate current object.
+        :param original: past state of puzzle (used for loading).
+        :param handle: ref back to Controller for notifying View.
+
+        :raise TypeError: given (grid, original) not instance of list or Puzzle.
+        :raise ValueError: failed validation following classical rules.
         """
         self.__notif = handle  # ref back to Controller for notify
 
-        def cell_parser(m_src):
+        def cell_parser(m_src, /):
             """
-            cell_parser(m_src) returns a list of Cells, representing the grid,
-                from the given mutable source (m_src)
+            When puzzle is initialized with instance of list, then each integer
+            is parsed with wrapper class Cell to differentiate original from
+            updated cells from a prior state.
+
+            :return: list of Cells, representing the grid, from the given
+                mutable source (m_src)
             """
             try:  # ASSERTS:
                 # Check for valid dimensions of given grid
@@ -40,7 +49,7 @@ class Puzzle(object):
                 print(f"[Debug] the puzzle could not be parsed.")
                 return None
 
-        # STAGE 1 - generate flat container for puzzle grid
+        # ( STAGE 1 - generate flat container for puzzle grid )
         if grid is None:  # fill empty grid
             self.__grid = [0]*(DIM**2)
         elif isinstance(grid, Puzzle):  # copy init
@@ -52,13 +61,14 @@ class Puzzle(object):
             raise TypeError(
                 f"expected {type(self)} or {type([])}, but found {type(grid)}"
             )
-        # STAGE 2 - validation of given grid
+        # ( STAGE 2 - validation of given grid )
         if not self.__validate():
             del self  # that's unfortunate
             raise ValueError(
                 f"validation failed."
             )
         else:  # passed validation
+            # puzzle properties
             self.__remaining_moves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
             self.__permanent_cell = self.permanent_iterator
             self.__init_generate = (self.__grid[i] for i in range(DIM*DIM))
@@ -78,11 +88,14 @@ class Puzzle(object):
     # METHODS ( PRIVATE ):
     def __validate(self):
         """
-        validate() returns True when the grid is correclty confirgured, otherwise False.
-            Requires:
-            - Puzzle is a 9*9 matrix
-            - Each cell value is of <class: 'int'>
-            - BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty)
+        Purpose of this validation method is for instantiation only.
+        Not intended to be used outside scope of __init__. Updates to the grid
+        are checked before mutating.
+
+        Following the classical rules of Sudoku:
+        BLKS,COLS,ROWS are composed of unique integers (excluding zero/empty).
+
+        :return: True when the grid is correclty confirgured, otherwise False.
         """
         if self.__grid is None: return False  # parsing stage failed
         result = []  # distinctness check
@@ -98,24 +111,32 @@ class Puzzle(object):
             )
         return all(result)
 
-    def __vlookup(self, index, /):
+    def __vlookup(self, index:int, /) -> list[Cell]:
         """
-        vlookup(index) returns a COL at the specified COL-index.
-            index follows 0..DIM convention (TOP to BOT)
+        Vertical/column neighboring cells.
+
+        :param index: range(0, DIM)
+        :return: a column at the specified COL-index.
+
         """
         return self.__grid[index:: DIM]
 
-    def __hlookup(self, index, /):
+    def __hlookup(self, index:int, /) -> list[Cell]:
         """
-        hlookup(index) returns a ROW at the specified ROW-index.
-            index follows 0..DIM convention (LHS to RHS)
+        Horizontal/row neighboring cells.
+
+        :param index:  range(0, DIM)
+        :return: a row at the specified ROW-index.
         """
         return self.__grid[index*DIM: DIM*(index+1)]
 
-    def __blookup(self, index, /):
+    def __blookup(self, index:int, /) -> list[Cell]:
         """
-        blookup(index) returns a BLK at the specified BLK-index.
-            index follows 0..DIM convention (TOP-LHS to BOT-RHS)
+        Block neighboring cells.
+        B_DIM constant useful for dimensions of sub-matrices.
+
+        :param index: range(0, DIM)
+        :return: a block at the specified BLK-index.
         """
         offset = 2*DIM*(index//3)  # skip to next row of submatrices
         n = DIM//3  # submatrix size (n*n)
@@ -126,23 +147,26 @@ class Puzzle(object):
         return reduce(concat, blk_nbr, [])  # noqa
 
     # METHODS ( PUBLIC ):
-    def neighbor(self, index, lookup=None):
+    def neighbor(self, index:int, lookup=BLK) -> list[Cell]:
         """
-        neighbor(index, lookup=0) returns the i-th BLK. Optionally takes in a
-                lookup code, changing return val to the i-th COL, ROW, or BLK.
-            Range:
-            - (int)index is in range[0..DIM-1]
-            - (int)lookup is in range[0..2] or [BLK,COL,ROW]
+        Purposed to fetch one of the three configurations at the given index.
+        The three configurations include BLK, COL, and ROW.
+
+        :param index: range(0, DIM)
+        :param lookup: (default=BLK) range(0, 3) or in [BLK,COL,ROW]
+        :return: the i-th block, where i = index
+            Given index, it may return the i-th block, column, or row.
+
+        :raise TypeError: lookup constant type must be int
+        :raise ValueError: parameter out-of-range
         """
         # ASSERTS:
         if index<0 or index>=DIM:
-            raise ValueError      # out of range
-        if lookup:
-            if not isinstance(lookup, int):
-                raise TypeError   # invalid type
-            elif lookup<0 or lookup>2:
-                raise ValueError  # out of range
-        else: lookup = BLK        # default
+            raise ValueError  # out of range
+        if not isinstance(lookup, int):
+            raise TypeError   # invalid type
+        elif lookup<0 or lookup>2:
+            raise ValueError  # out of range
 
         return {  # fetch by lookup-code at given index
             BLK: lambda idx: self.__blookup(idx),
@@ -150,12 +174,14 @@ class Puzzle(object):
             ROW: lambda idx: self.__hlookup(idx)
         }.get(lookup)(index)
 
-    def update(self, x, y, val, /):
+    def update(self, x:int, y:int, val:int, /) -> bool:
         """
-        update(index, val) returns True if the given move was successful,
-                otherwise False.
-            Requires: (int)x,(int)y is in range[0..DIM-1]
-            Affects: grid changes at the specified index with the given val
+        Updates the grid at the given (x, y)-coordinate with val.
+
+        :param x: ROW in range(0, 9)
+        :param y: COL in range(0, 9)
+        :param val: value to mutate cell into.
+        :return: True if the given move was successful; otherwise, False.
         """
         valid = (val==0)
         # An unchanged update is considered invalid
@@ -172,47 +198,53 @@ class Puzzle(object):
                 len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
 
         if valid:
-            try:
-                self.__grid[DIM * x + y].update(val)  # set value
-            except AttributeError as err:
-                print(f"[Debug] Invalid move. {str.capitalize(str(err))}")
+            if self.__grid[DIM*x + y].locked:
+                print(f"[Debug] Invalid move. This cell is locked.")
                 return False
             else:
+                self.__grid[DIM * x + y].update(val)  # set value
                 self.__remaining_moves += 1 if val == 0 else -1
                 if self.__notif: self.__notif.notify(x, y, val)
         return valid
 
     @property
-    def remaining_moves(self):
-        """ number of moves away from completion """
+    def remaining_moves(self) -> int:
+        """
+        :return: number of moves away from completion.
+        """
         return self.__remaining_moves
 
     @property
-    def empty(self):
-        """ True if grid is zero-filled, otherwise False """
+    def empty(self) -> bool:
+        """
+        :return: True if grid is zero-filled; otherwise, False.
+        """
         return self.__remaining_moves == DIM*DIM
 
     @property
-    def complete(self):
-        """ True if all cells are non-zero (puzzle is complete), otherwise False. """
+    def complete(self) -> bool:
+        """
+        :return: True if all cells are non-zero (puzzle is complete);
+        otherwise, False.
+        """
         return self.__remaining_moves == 0
 
     @property
-    def permanent_iterator(self):
+    def permanent_iterator(self) -> iter:
         """
-        Returns a generator for all the cell indices that were non-empty in
+        :return: an iterator for all the cell indices that were non-empty in
             the original puzzle.
         """
         return (i for i in range(DIM*DIM) if self.__grid[i].locked)
 
     @property
-    def permanent_cell(self):
+    def permanent_cell(self) -> (int, int):
         """
-        Returns a single coordinate on the puzzle board that represents a cell
-            from the original puzzle; therefore, being locked/permanent.
+        This operation is cyclic and will loop back to the first cell when
+        running into a StopIteration.
 
-            This operation is cyclic and will loop back to the first cell when
-            running into a StopIteration.
+        :return: a single (x, y)-coordinate on the puzzle board that represents
+            a cell from the original puzzle; therefore, being locked/permanent.
         """
         c = None
         while c is None:  # cyclic iterator
@@ -223,5 +255,10 @@ class Puzzle(object):
         return c//DIM, c%DIM
 
     @property
-    def init_iterator(self):
-        return next(self.__init_generate)
+    def init_iterator(self) -> int:
+        """
+        A single-use generator for initializaiton.
+
+        :return: a i-th cell value, where i := the number of calls
+        """
+        return int(next(self.__init_generate))

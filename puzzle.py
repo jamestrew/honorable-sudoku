@@ -111,7 +111,7 @@ class Puzzle(object):
             )
         return all(result)
 
-    def __vlookup(self, index:int, /) -> list[Cell]:
+    def __vlookup(self, index:int, /) -> list:
         """
         Vertical/column neighboring cells.
 
@@ -121,7 +121,7 @@ class Puzzle(object):
         """
         return self.__grid[index:: DIM]
 
-    def __hlookup(self, index:int, /) -> list[Cell]:
+    def __hlookup(self, index:int, /) -> list:
         """
         Horizontal/row neighboring cells.
 
@@ -130,7 +130,7 @@ class Puzzle(object):
         """
         return self.__grid[index*DIM: DIM*(index+1)]
 
-    def __blookup(self, index:int, /) -> list[Cell]:
+    def __blookup(self, index:int, /) -> list:
         """
         Block neighboring cells.
         B_DIM constant useful for dimensions of sub-matrices.
@@ -147,7 +147,7 @@ class Puzzle(object):
         return reduce(concat, blk_nbr, [])  # noqa
 
     # METHODS ( PUBLIC ):
-    def neighbor(self, index:int, lookup=BLK) -> list[Cell]:
+    def neighbor(self, index:int, lookup=BLK) -> list:
         """
         Purposed to fetch one of the three configurations at the given index.
         The three configurations include BLK, COL, and ROW.

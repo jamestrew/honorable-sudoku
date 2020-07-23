@@ -51,9 +51,9 @@ class Main(tk.Frame, WidgetDisplay):
 
     def init_board(self):
         """ Populate blank grid with new puzzle """
-        self.perm_cells = self.__root_instance.callback(permanent_cell=0)
+        self.perm_cells = self.__root_instance.callback(perm_n=0)
         for i in range(DIM*DIM):
-            value = self.__root_instance.callback(init_iterator=1)
+            value = self.__root_instance.callback(init_n=1)
             value = "" if value == 0 else str(value)
             self.__grid[i//DIM][i%DIM]["num"].config(
                 bg=WHITE, fg=NUMS, text=value, font=CMD_HELVETICA[20]

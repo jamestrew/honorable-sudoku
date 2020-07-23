@@ -27,22 +27,30 @@ class WidgetDisplay(tk.Tk, View):
 
     # METHODS ( PUBLIC ):
     def callback(self, *args, **kwargs):
-        for k,v in kwargs.items():
-            if k == "load_game" and isinstance(v, tuple) and len(v)==2:
-                gamemode, difficulty = v
-                self.__request.load_game(gamemode, difficulty)
-            elif k=="init_iterator" and isinstance(v, int):
-                return self.__request.init_n(v)
-            elif k=="permanent_cell" and isinstance(v,int):
-                return self.__request.perm_n(v)
-            elif k=="fetch_conflicts" and isinstance(v, tuple) and len(v)==3:
-                x,y,val = v
-                return self.__request.fetch_conflicts(x, y, val)
-            elif k=="gameboard_update" and isinstance(v, tuple) and len(v)==3:
-                x,y,val = v
-                return self.__request.gameboard_update(x, y, val)
-            else: raise AttributeError
-        return None
+        # callable methods are public attrs of Controller
+        valid_call = [fn for fn in dir(self.__request) if fn[:1]!='_']
+        rtns = []  # result of callback returns
+
+        # ( STAGE 1 - check valid callback )
+        for (fn,params) in kwargs.items():
+            if fn not in valid_call: raise KeyError(
+                f"callback to Sudoku::Controller.{fn} failed."
+            )   # Controller.fn DNE
+
+        # ( STAGE 2 - process callback )
+        for (fn,params) in kwargs.items():  # callback all
+            # Controller.fn(params)
+            if isinstance(params, tuple) or isinstance(params, list):
+                result = getattr(self.__request, fn)(*iter(params))
+            else:  # at least one argument exists
+                result = getattr(self.__request, fn)(params)
+            if not(result is None): rtns.append(result)  # collect all returns
+
+        if len(rtns) < 2:
+            # single callback- unwrap return
+            return None if len(rtns)==0 else rtns.pop()
+        # multiple callbacks wrapped in list
+        return rtns
 
     def show_frame(self, page_name):
         """ Show a frame for a given page name """

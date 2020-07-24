@@ -17,7 +17,6 @@ class Controller(Notification):
             val is fwd'd to View upon successful update to the main Puzzle.
         """
         if self.__v: self.__v.notify(x, y, val)
-        print(f"[Debug] Controller has notified View.")
 
     def start_game(self):
         """
@@ -56,9 +55,9 @@ class Controller(Notification):
         self.__gamemode = gamemode
         self.__difficulty = difficulty
         dir_board = {  # all puzzle files
-            EASY: "Boards/easy.txt",
-            HARD: "Boards/hard.txt",
-            MAGI: "Boards/magic.txt"
+            EASY_DIFF: "Boards/easy.txt",
+            HARD_DIFF: "Boards/hard.txt",
+            MAGI_DIFF: "Boards/magic.txt"
         }.get(difficulty)
         flat_grid = None  # flattened grid from input
         try:
@@ -70,73 +69,39 @@ class Controller(Notification):
             flat_grid = []
             for r in rows:
                 flat_grid.extend(map(int, r.strip().split()))
-            print(f"[Debug] Puzzle loaded...")
+            print(f"[Debug] Puzzle loaded: gamemode({gamemode}), difficulty({difficulty})")
+            # self.print_puzzle()  # [Debug]
         finally:
             self.__p = Puzzle(flat_grid, handle=self)
-            self.print_puzzle()
 
     def fetch_conflicts(self, x, y, val):
         conflicts = []  # list(pair) of coordinates that conflict with update.
 
         if val == 0: return set(conflicts)  # clearing a cell cannot cause conflict
-        else:
-            config_index = {  # { config_key: DIM config }
-                'v': self.__p.neighbor(y, COL),  # ROW
-                'h': self.__p.neighbor(x, ROW),  # COL
-                'b': self.__p.neighbor(DIM//3*(y//3) + x//3)  # BLK
-            }
+        config_index = {  # { config_key: DIM config }
+            ROW: self.__p.neighbor(y, COL),  # ROW
+            COL: self.__p.neighbor(x, ROW),  # COL
+            BLK: self.__p.neighbor(SUB*(y//3) + x//3)  # BLK
+        }
         for (lookup_type, config) in config_index.items():
             config = list(map(int, config))
             if val in config:
                 offset = config.index(val)
                 conflicts.append({
-                    'v': (offset, y),
-                    'h': (x, offset),
-                    'b': (x//B_DIM + offset//B_DIM, y//B_DIM + offset%B_DIM)
+                    ROW: (offset, y),
+                    COL: (x, offset),
+                    BLK: (x//SUB + offset//SUB, y//SUB + offset%SUB)
                 }.get(lookup_type))
         return set(conflicts)
 
     def gameboard_update(self, x, y, val):
         return self.__p.update(x, y, val)
 
-    def init_n(self, n=1):
-        if isinstance(n, int):
-            if n == 0:
-                return [
-                    self.__p.init_iterator for _ in range(DIM*DIM)
-                ]
-            if n == 1:
-                return self.__p.init_iterator if n>0 else None  # checking if n>0 when n = 1 seems redundant (?)
-            if n > 1:
-                return [self.__p.init_iterator for _ in range(n)]
-            else:
-                raise ValueError(
-                    f"expected a non-negative integer, but received {n}."
-                )
-        else:
-            raise TypeError(
-                f"expected a non-negative integer, but received {type(n)}."
-            )
+    def init_next(self):
+        return self.__p.init_iterator
 
-    def perm_n(self, n=1):
-        if isinstance(n, int):
-            if n == 0:
-                return [
-                    self.__p.permanent_cell
-                    for _ in range(DIM*DIM - self.__p.remaining_moves)
-                ]
-            if n == 1:
-                return self.__p.permanent_cell
-            if n > 1:
-                return [self.__p.permanent_cell for _ in range(n)]
-            else:
-                raise ValueError(
-                    f"expected a non-negative integer, but received {n}."
-                )
-        else:
-            raise TypeError(
-                f"expected a non-negative integer, but received {type(n)}."
-            )
+    def lock_check(self, x:int, y:int, /) -> bool:
+        return self.__p.lock_check(x, y)
 
     # METHODS ( PRIVATE ):
     def print_puzzle(self):

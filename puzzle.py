@@ -133,7 +133,7 @@ class Puzzle(object):
     def __blookup(self, index:int, /) -> list:
         """
         Block neighboring cells.
-        B_DIM constant useful for dimensions of sub-matrices.
+        SUB constant useful for dimensions of sub-matrices.
 
         :param index: range(0, DIM)
         :return: a block at the specified BLK-index.
@@ -189,8 +189,8 @@ class Puzzle(object):
             # Find neighbor at specified (x,y) of grid
             v_nbr = list(map(int, self.neighbor(y, COL)))
             h_nbr = list(map(int, self.neighbor(x, ROW)))
-            b_nbr = list(map(int, self.neighbor(B_DIM*(x//3) + y//3)))
-            v_nbr[x] = h_nbr[y] = b_nbr[B_DIM*(x%3) + y%3] = val  # peek-update
+            b_nbr = list(map(int, self.neighbor(SUB*(x//3) + y//3)))
+            v_nbr[x] = h_nbr[y] = b_nbr[SUB*(x%3) + y%3] = val  # peek-update
 
             # and-map of indexed col, row, and blk distinctness
             valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
@@ -206,6 +206,9 @@ class Puzzle(object):
                 self.__remaining_moves += 1 if val == 0 else -1
                 if self.__notif: self.__notif.notify(x, y, val)
         return valid
+
+    def lock_check(self, x:int, y:int, /) -> bool:
+        return self.__grid[x*DIM + y].locked
 
     @property
     def remaining_moves(self) -> int:

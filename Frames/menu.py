@@ -1,143 +1,115 @@
-import sys
 from resource import *
 from widget_display import WidgetDisplay
+import re
+import random
+import json
 import tkinter as tk
 
 
-class Startup(tk.Frame, WidgetDisplay):
+class Menu(tk.Frame, WidgetDisplay):
     """
-    Sudoku::WidgetDisplay::Startup
-        Display for the Startup screen. Always shown first when WidgetDisplay
-        is instantiated. It enables the selection of gamemode and difficulty.
+    Sudoku::WidgetDisplay::Menu
+        Display for the main-menu screen. Always shown first when WidgetDisplay
+        is instantiated.
         Requires:
         - To proceed using PLAY command, user must select gamemode and difficulty.
         Affects:
         - Controller.gamemode
         - Controller.difficulty
     """
-    # selection within groups specified below
-    __gamemode = None
-    __difficulty = None
 
-    __btn_modes = None  # modes group
-    __btn_diffs = None  # difficulty group
-    __btn_start = None  # start button
+    def __init__(self, wm, instance):
+        super().__init__()
 
-    def __init__(self, root, instance):
-        super().__init__(root)
-        self.__root_instance = instance
+        self.__wdisplay = instance
 
-        # background
-        bg = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
-        bg.grid(padx=75, pady=(75, 120))
-        bg.grid_rowconfigure(0, weight=1)
-        bg.grid_columnconfigure(0, weight=1)
+        grp_interact = wm.get_frm_interact()
+        grp_feedback = wm.get_frm_feedback()
 
-        start_frame = tk.Frame(bg, width=675, height=675, bg=WHITE)
-        start_frame.grid()
+        grp_interact.grid_columnconfigure(0, weight=1)
+        grp_feedback.grid_columnconfigure(0, weight=1)
 
-        title = tk.Label(
-            start_frame, bg=WHITE, fg=BLACK, text="GAYDOKU", font=CMD_HELVETICA[55]
+        """ HEAD """
+        self.__grp_head = tk.Frame(grp_interact, **TRANSPARENT)
+        self.__head_markup()
+        self.__grp_head.grid(padx=16, pady=(48, 32), sticky="ew")
+
+        """ FOOT """
+        self.__grp_foot = tk.Frame(grp_feedback, **TRANSPARENT)
+        self.__splash_tooltips = dict()
+        self.__foot_markup()
+        self.__grp_foot.grid(padx=16, pady=(32, 32), sticky="ew")
+
+        """ BODY """
+        self.__grp_body = tk.Frame(grp_interact, **TRANSPARENT)
+        self.__body_markup()  # dependency: footer markup
+        self.__grp_body.grid(padx=16, pady=(24, 72), sticky="ew")
+
+    # METHODS ( PRIVATE ):
+    def __head_markup(self, /):
+        self.__grp_head.grid_columnconfigure(0, weight=1)
+        self.__grp_head.grid_rowconfigure(0, weight=1)
+
+        head_title = tk.Label(self.__grp_head, text="Honorable Sudoku", **MENU_TITLE)
+        head_title.grid(sticky="nsew")
+
+    def __foot_markup(self, /):
+        self.__grp_head.grid_columnconfigure(0, weight=1)
+        self.__grp_head.grid_rowconfigure(0, weight=1)
+        foot_tip = tk.Label(
+            self.__grp_foot, **FOOT_TOOLTIP,
+            wraplength=int(self.__wdisplay.wsize_width*(5/8))-32
         )
-        title.grid(padx=10, pady=10)
+        foot_tip.grid()
 
-        # MODE
-        mode_frame = tk.Frame(start_frame, bg=WHITE)
-        tk.Label(  # MODE HEADER
-            mode_frame, text="MODE: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
-        ).grid()
-        self.__btn_modes = {
-            USER_PLAY: tk.Button(mode_frame, text='USER PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
-            COMP_PLAY: tk.Button(mode_frame, text='COMP PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25])
+    def __body_markup(self, /):
+        self.__grp_body.grid_columnconfigure(0, weight=1)
+        self.__grp_body.grid_rowconfigure((0, 1, 2, 3), weight=1)
+
+        grp_opts = {
+            "PLAY": tk.Button(self.__grp_body, text="NEW GAME"),
+            "LOAD": tk.Button(self.__grp_body, text="LOAD GAME"),
+            "SETT": tk.Button(self.__grp_body, text="SETTINGS"),
+            "HELP": tk.Button(self.__grp_body, text="HELP"),
+            "EXIT": tk.Button(self.__grp_body, text="EXIT")
         }
-        mode_frame.grid(row=1, padx=5, pady=5)
-        self.__btn_modes[USER_PLAY].grid(row=0, column=1, padx=2, pady=2)
-        self.__btn_modes[COMP_PLAY].grid(row=0, column=2, padx=2, pady=2)
+        try:
+            with open("./Frames/splash.json", encoding="utf-8") as tooltips:
+                splash = json.load(tooltips)
+            for s in splash:
+                self.__splash_tooltips[grp_opts.get(s).winfo_id()] = splash[s]
+        except FileNotFoundError:
+            for (name, o) in grp_opts.items():
+                self.__splash_tooltips[o.winfo_id()] = [f"{name}:<splash message not found>"]
 
-        # DIFFICULTY
-        diff_frame = tk.Frame(start_frame, bg=WHITE)
-        tk.Label(
-            diff_frame, text="DIFFICULTY: ", bg=WHITE, fg=BLACK, font=CMD_HELVETICA[30]
-        ).grid()
-        self.__btn_diffs = {
-            EASY: tk.Button(diff_frame, text='EASY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
-            HARD: tk.Button(diff_frame, text='HARD', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25]),
-            MAGI: tk.Button(diff_frame, text='MAGIC', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25])
-        }
-        diff_frame.grid(row=2, padx=5, pady=5)
-        self.__btn_diffs[EASY].grid(row=0, column=1, padx=2, pady=2)
-        self.__btn_diffs[HARD].grid(row=0, column=2, padx=2, pady=2)
-        self.__btn_diffs[MAGI].grid(row=0, column=3, padx=2, pady=2)
+        for (name, o) in grp_opts.items():
+            o.config(**CMD_CENTER)
+            o.grid(padx=240, pady=(2, 3), sticky="ew")
+            o.bind("<Enter>", self.__hoverstyle_toggle)
+            o.bind("<Leave>", self.__hoverstyle_toggle)
+        grp_opts["PLAY"].config(command=self.play_invoke)
+        grp_opts["EXIT"].config(command=self.__wdisplay.close_app)
 
-        option_btns = [*list(self.__btn_modes.values()), *list(self.__btn_diffs.values())]
-        play_button = tk.Button(
-            start_frame, text='PLAY', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25], state="disabled",
-            command=lambda: self.play_game(option_btns)
-        )
-        play_button.grid(padx=2, pady=2)
-        self.__btn_start = play_button
-
-        self.__btn_diffs[EASY].config(command=lambda: [
-            self.set_difficulty(0, list(self.__btn_diffs.values())),
-            self.check_play(self.__btn_start)
-        ])
-        self.__btn_diffs[HARD].config(command=lambda: [
-            self.set_difficulty(1, list(self.__btn_diffs.values())),
-            self.check_play(self.__btn_start)
-        ])
-        self.__btn_diffs[MAGI].config(command=lambda: [
-            self.set_difficulty(2, list(self.__btn_diffs.values())),
-            self.check_play(self.__btn_start)
-        ])
-
-        self.__btn_modes[USER_PLAY].config(command=lambda: [
-            self.set_gamemode(0, list(self.__btn_modes.values())),
-            self.check_play(self.__btn_start)
-        ])
-        self.__btn_modes[COMP_PLAY].config(command=lambda: [
-            self.set_gamemode(1, list(self.__btn_modes.values())),
-            self.check_play(self.__btn_start)
-        ])
-
-        # EXIT GAME BUTTON
-        kill_button = tk.Button(
-            start_frame, text='EXIT GAME', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25], command=sys.exit
-        )
-        kill_button.grid(pady=(150, 2))
+    def __hoverstyle_toggle(self, event):
+        foot_tip = self.__grp_foot.winfo_children()[0]  # dangerous assumption
+        event_name = re.search(r"(?<=<)([A-Za-z]+)", str(event)).group()
+        {
+            "Enter": lambda: [
+                event.widget.config(**CMD_HOVER_ACTIVE),
+                foot_tip.config(
+                    text=random.choice(self.__splash_tooltips.get(event.widget.winfo_id()))
+                )
+            ],
+            "Leave": lambda: [
+                event.widget.config(**CMD_HOVER_INACTIVE),
+                foot_tip.config(text="")
+            ]
+        }.get(event_name)()
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
-    def set_gamemode(self, gamemode, parent=None):
-        """ Configures buttons and sets gamemode """
-        self.__gamemode = gamemode
-        self.group_select(gamemode, parent)
-
-    def set_difficulty(self, difficulty, parent=None):
-        """ Configures buttons and sets difficulty """
-        self.__difficulty = difficulty
-        self.group_select(difficulty, parent)
-
-    def check_play(self, play_button=None):
-        """ Enables the PLAY button if gamemode and difficulty are selected """
-        play_button.config(
-            state="disabled"
-            if None in[self.__gamemode, self.__difficulty] else "normal"
-        )
-
-    def play_game(self, buttons):
-        """ Raises all buttons and loads the MAIN game """
-        self.group_select(-1, buttons)
-        self.__root_instance.callback(
-            load_game=(self.__gamemode, self.__difficulty)
-        )
-        page = self.__root_instance.get_page("Main")
-        page.init_board()
-
-        self.__root_instance.show_frame("Main")
-
-    @staticmethod
-    def group_select(select, parent=None):
-        for (i) in range(len(parent)):
-            parent[i].configure(relief="sunken" if select == i else "raised")
+    def play_invoke(self):
+        self.__wdisplay.frame_destroy()
+        self.__wdisplay.open_frame("GameConfigure")

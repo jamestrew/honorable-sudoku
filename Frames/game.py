@@ -1,130 +1,214 @@
 from resource import *
 from widget_display import WidgetDisplay
+import string
+import time
 import tkinter as tk
 
 
-class Main(tk.Frame, WidgetDisplay):
+class GridManager(object):
     __grid = []
-    __selection = None
 
-    def __init__(self, root, instance):
-        super().__init__(root)
-        self.__root_instance = instance
+    def __init__(self):
+        self.g_ref = {"bg": 0, "fg": 1}
 
-        # background
-        bg_frame = tk.Frame(self, width=675, height=675, bg=BLACK, bd=5)
-        bg_frame.grid(padx=75, pady=(75, 120))
+    def append(self, master:tk.Frame, value:tk.Label):
+        self.__grid.append((master, value))
 
-        # create a blank grid
-        for x in range(DIM):
-            row = []
-            yborder = 5.0 if (x%3==0 and x!=0) else 0.5
-            for y in range(DIM):
-                xborder = 5.0 if (y%3==0 and y!=0) else 0.5
+    def background(self, x:int, y:int) -> tk.Frame:
+        return self.__grid[x*DIM + y][self.g_ref.get("bg")]
 
-                cell_frame = tk.Frame(bg_frame, width=75, height=75, bg=WHITE)
-                cell_frame.grid(
-                    row=x, column=y, padx=(xborder, 0.5), pady=(yborder, 0.5)
-                )
-                cell_number = tk.Label(bg_frame, bg=WHITE)
-                cell_number.grid(row=x, column=y)
+    def foreground(self, x:int, y:int) -> tk.Label:
+        return self.__grid[x*DIM + y][self.g_ref.get("fg")]
 
-                row.append({
-                    "frm": cell_frame,
-                    "num": cell_number
-                })
-            self.__grid.append(row)
+    def update(self, x:int, y:int, val:int):
+        self.foreground(x, y).config(text=(val if val>0 else ""))
 
-        def return_to_startup():
-            # unbind events
-            self.__root_instance.unbind("<Button-1>")
-            for i in range(1, 10):
-                self.__root_instance.unbind(str(i))
+    @property
+    def w_depth(self):
+        leaf = self.__grid[0][self.g_ref.get("fg")]
+        return leaf.winfo_parent().count('!')
 
-            self.__root_instance.show_frame("Startup")  # return to startup menu
 
-        exit_button = tk.Button(
-            self, text='EXIT', bg=WHITE, fg=BLACK, font=CMD_HELVETICA[25],
-            command=return_to_startup
-        )
-        exit_button.place(x=75, y=5)
+class Game(tk.Frame, WidgetDisplay):
 
-    def init_board(self):
-        """ Populate blank grid with new puzzle """
-        self.perm_cells = self.__root_instance.callback(perm_n=0)
-        for i in range(DIM*DIM):
-            value = self.__root_instance.callback(init_n=1)
-            value = "" if value == 0 else str(value)
-            self.__grid[i//DIM][i%DIM]["num"].config(
-                bg=WHITE, fg=NUMS, text=value, font=CMD_HELVETICA[20]
-            )
-        self.play()
+    def __init__(self, wm, instance):
+        super().__init__()
 
-    def play(self):
-        """ set up binds and init coordinates/value for play """
-        self.__root_instance.bind("<Button-1>", self.select_cell)  # binds M1 to click event
-        for i in range(DIM+1):
-            self.__root_instance.bind(str(i), self.try_cell)
+        self.__wdisplay = instance
+        self.__grid = GridManager()
         self.__selection = None
 
-    def select_cell(self, event):
-        """
-        Sets clicked cell coordinate based on event.widget (clicked widget).
-        Selected cell is highlighted, previously selected cell de-highlighted.
-        """
-        # filter out all non-valid cell widgets
-        widgetlen = len(str(event.widget))
-        if widgetlen < 26: return
+        self.__start = .0
+        self.__elapsedtime = .0
+        self.__running = False
+        self.timestr = tk.StringVar()
 
-        cell_index = str(event.widget)[27:]  # gets the cell widget number
-        if not cell_index:  # first cell widget is not numbered
-            self.__selection = (0, 0)
-        else:
-            cell_index = int(cell_index) - 1
-            self.__selection = (cell_index//DIM, cell_index%DIM)
-        self.change_bg(WHITE)  # De-select cell
-        self.change_bg(SELECT, [self.__selection])  # Highlight selected cell
+        grp_interact = wm.get_frm_interact()
+        grp_feedback = wm.get_frm_feedback()
 
-    def try_cell(self, event):
-        """
-        Given a selected give, enables enter of a number in the cell.
-        If the value is valid, update Puzzle. Otherwise show conflicts.
-        """
-        value = int(event.char)
+        grp_interact.grid_columnconfigure(0, weight=1)
+        grp_interact.grid_rowconfigure(1, weight=1)
+        grp_feedback.grid_columnconfigure(0, weight=1)
 
-        # enter value in to the cell initially
-        x,y = self.__selection
-        conflicts = self.__root_instance.callback(fetch_conflicts=(x, y, value))
-        if isinstance(conflicts, set):
-            self.change_bg(CONF, conflicts)
+        """ HEAD """
+        self.__grp_head = tk.Frame(grp_interact, **TRANSPARENT)
+        self.__head_markup()
+        self.__grp_head.grid(padx=16, pady=(48, 16), sticky="ew")
 
-        if self.__root_instance.callback(gameboard_update=(x, y, value)):
-            self.__grid[x][y]["num"].config(
-                fg=BLACK, text=(value if value>0 else ""), font=CMD_HELVETICA[20]
+        """ FOOT """
+        self.__grp_foot = tk.Frame(grp_feedback, **TRANSPARENT)
+        self.__foot_markup()
+        self.__grp_foot.grid(padx=16, pady=(32, 32), sticky="ew")
+
+        """ BODY """
+        self.__grp_body = tk.Frame(grp_interact, **TRANSPARENT)
+        self.__body_markup()
+        self.__grp_body.grid(padx=16, pady=(16, 16), sticky="nsew")
+
+        self.__wdisplay.bind("<Button-1>", self.select_cell)    # MOUSE1 bound to cell selection
+        [  # NUMS bound to gameboard_update
+            self.__wdisplay.bind(num, self.try_cell) for num in string.digits
+        ]
+        self.__stopwatch_start()
+
+    def __stopwatch_update(self):
+        self.__elapsedtime = time.time() - self.__start
+        self.__stopwatch_settime(self.__elapsedtime)
+        self.__timer = self.after(100, self.__stopwatch_update)
+
+    def __stopwatch_settime(self, elap):
+        mins = int(elap/60)
+        secs = int(elap - mins*60.0)
+        self.timestr.set("%02d:%02d"%(mins, secs))
+
+    def __stopwatch_start(self):
+        if self.__running: return
+        self.__start = time.time() - self.__elapsedtime
+        self.__stopwatch_update()
+        self.__running = True
+
+    def __stopwatch_stop(self):
+        if not self.__running: return
+        self.__wdisplay.after_cancel(self._timer)
+        self.__elapsedtime = time.time() - self.__start
+        self.__stopwatch_settime(self.__elapsedtime)
+        self.__running = False
+
+    def __stopwatch_reset(self):
+        self.__start = time.time()
+        self.__elapsedtime = .0
+        self.__stopwatch_settime(self.__elapsedtime)
+
+    def __head_markup(self):
+        self.__grp_head.columnconfigure((0, 1), weight=1)
+        frm_navbar = tk.Frame(self.__grp_head, **TRANSPARENT)
+        lbl_navbar_root = tk.Label(frm_navbar, text="/honorable sudoku", **NAV_BAR)
+        lbl_navbar_root.pack(side=tk.LEFT, fill=tk.Y)
+        lbl_navbar_intr = tk.Label(frm_navbar, text="/configuration", **NAV_BAR)
+        lbl_navbar_intr.pack(side=tk.LEFT, fill=tk.Y)
+        lbl_navbar_curr = tk.Label(frm_navbar, text="/play", **NAV_BAR)
+        lbl_navbar_curr.pack(side=tk.LEFT, fill=tk.Y)
+        lbl_navbar_root.bind("<Enter>", self.hoverstyle_toggle)
+        lbl_navbar_root.bind("<Leave>", self.hoverstyle_toggle)
+        lbl_navbar_intr.bind("<Enter>", self.hoverstyle_toggle)
+        lbl_navbar_intr.bind("<Leave>", self.hoverstyle_toggle)
+        lbl_navbar_root.bind("<Button-1>", self.navbar_root_invoke)
+        lbl_navbar_intr.bind("<Button-1>", self.navbar_intr_invoke)
+        frm_navbar.grid(sticky="ew")
+
+        frm_stopwatch = tk.Frame(self.__grp_head, **TRANSPARENT)
+        frm_stopwatch.grid_columnconfigure(0, weight=1)
+        frm_stopwatch.grid_rowconfigure(0, weight=1)
+        frm_stopwatch.grid(row=0, column=1, sticky="ns")
+        lbl_stopwatch = tk.Label(frm_stopwatch, textvariable=self.timestr, **NAV_BAR)
+        lbl_stopwatch.pack(side=tk.LEFT, fill=tk.Y)
+        self.__stopwatch_settime(self.__elapsedtime)
+
+    def __foot_markup(self):
+        pass
+
+    def __body_markup(self):
+        self.__grp_body.grid_columnconfigure(0, weight=1)
+        self.__grp_body.grid_rowconfigure(0, weight=1)
+
+        frm_outline = tk.Frame(self.__grp_body, bg=XIKETIC)
+        frm_outline.grid()
+        frm_grid = tk.Frame(frm_outline, bg=XIKETIC, highlightbackground=BLACK, highlightthickness=2)
+        frm_grid.grid(padx=3, pady=3)
+
+        # create a blank grid
+        for c in range(DIM*DIM):
+            # ( reading constants )
+            x, y = (c//DIM, c%DIM)
+            padx = (5 if (y>0 and y%SUB == 0) else .5, .5)
+            pady = (5 if (x>0 and x%SUB == 0) else .5, .5)
+            value = self.__wdisplay.callback(init_next=None)
+            locked = self.__wdisplay.callback(lock_check=(x, y))
+
+            frm_cell = tk.Frame(frm_grid, **CELL_BG)
+            frm_cell.grid_columnconfigure(0, weight=1)
+            frm_cell.grid_rowconfigure(0, weight=1)
+            frm_cell.grid_propagate(False)
+            frm_cell.grid(row=x, column=y, padx=padx, pady=pady)
+
+            lbl_cell = tk.Label(
+                frm_cell,
+                **(CELL_FG_LOCK if locked else CELL_FG),
+                text=(value if value>0 else "")
             )
+            lbl_cell.grid()
 
-    def change_bg(self, color, coordinates=None):
-        """
-        Changes the color of the background.
-        By default, changes the bg color of the entire board.
-
-        Provide coordinates as a list(tuple) to change the bg color of a select cells
-        """
-        if coordinates is None:
-            for i in range(DIM):
-                for j in range(DIM):
-                    self.__grid[i][j]["frm"].configure(bg=color)
-                    self.__grid[i][j]["num"].configure(bg=color)
-        else:
-            for coord in coordinates:
-                i, j = coord
-                if coord in self.perm_cells:
-                    self.__grid[i][j]["frm"].configure(bg=CONF)  # CONF = CONFLICT
-                    self.__grid[i][j]["num"].configure(bg=CONF)
-                else:
-                    self.__grid[i][j]["frm"].configure(bg=color)
-                    self.__grid[i][j]["num"].configure(bg=color)
+            self.__grid.append(frm_cell, lbl_cell)
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
-        print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
+        self.__grid.update(x, y, val)
+
+    def select_cell(self, event):
+        master = event.widget.master if isinstance(event.widget, tk.Label) \
+            else event.widget  # bypass value-label
+        try:
+            select_info = master.grid_info()  # dict(property, value)
+            select_prev = self.__selection    # previous highlight
+
+            x, y = (select_info["row"], select_info["column"])
+            depth = master.winfo_parent().count('!') + 1
+        except (AttributeError, KeyError): return  # invalid grid_info
+        else:  # assign new selection on correct frame-depth
+            if depth == self.__grid.w_depth:
+                self.__selection = (x, y)
+        # Highlight selection
+        if select_prev is not None:  # Unselect previous cell
+            self.__grid.background(*select_prev).config(**CELL_BG)
+            self.__grid.foreground(*select_prev).config(**CELL_BG)
+        if self.__selection is not None:
+            self.__grid.background(*self.__selection).config(**CELL_SELECT)
+            self.__grid.foreground(*self.__selection).config(**CELL_SELECT)
+
+    def try_cell(self, event):
+        value = int(event.char)
+        conflicts = self.__wdisplay.callback(
+            fetch_conflicts=(*self.__selection, value)
+        )
+
+        def toggle_conflicts(conflict_coords, revert=False):
+            for c in conflict_coords:
+                # ( reading constants )
+                x, y = c
+                # ( highlight conflicts )
+                self.__grid.background(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
+                self.__grid.foreground(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
+
+        if isinstance(conflicts, set):
+            toggle_conflicts(conflicts)
+
+        self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
+        self.__wdisplay.after(1000, lambda: toggle_conflicts(conflicts, True))
+
+    def navbar_root_invoke(self, event):
+        self.__wdisplay.frame_destroy()
+        self.__wdisplay.open_frame("Menu")
+
+    def navbar_intr_invoke(self, event):
+        self.__wdisplay.frame_destroy()
+        self.__wdisplay.open_frame("GameConfigure")

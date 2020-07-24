@@ -1,0 +1,19 @@
+{
+    "PLAY": [
+        "Start a new puzzle."
+    ],
+    "LOAD": [
+        "Continue from a previous game."
+    ],
+    "SETT": [
+        "Adjust the appearance and behaviour of the game."
+    ],
+    "HELP": [
+        "View some resources on how to play, and find an overview of the rules for each gamemode."
+    ],
+    "EXIT": [
+        "\"Don’t be discouraged. It’s often the last key in the bunch that opens the lock.\" —(unknown)",
+        "\"The man who moves a mountain begins by carrying away small stones.\" —Confucius",
+        "\"Perseverance is not a long race; it is many short races one after the other.\" —Walter Elliot"
+    ]
+}

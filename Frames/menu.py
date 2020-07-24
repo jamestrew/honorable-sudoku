@@ -111,5 +111,5 @@ class Menu(tk.Frame, WidgetDisplay):
         print(f"[Debug] {type(self)}: successfully changed (row:{x}, col:{y}) to {val}.")
 
     def play_invoke(self):
-        self.__wdisplay.frame_destroy()
-        self.__wdisplay.open_frame("GameConfigure")
+        self.__wdisplay.page_destroy()
+        self.__wdisplay.open_page("GameConfigure")

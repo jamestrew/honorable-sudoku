@@ -206,9 +206,9 @@ class Game(tk.Frame, WidgetDisplay):
         self.__wdisplay.after(1000, lambda: toggle_conflicts(conflicts, True))
 
     def navbar_root_invoke(self, event):
-        self.__wdisplay.frame_destroy()
-        self.__wdisplay.open_frame("Menu")
+        self.__wdisplay.page_destroy()
+        self.__wdisplay.open_page("Menu")
 
     def navbar_intr_invoke(self, event):
-        self.__wdisplay.frame_destroy()
-        self.__wdisplay.open_frame("GameConfigure")
+        self.__wdisplay.page_destroy()
+        self.__wdisplay.open_page("GameConfigure")

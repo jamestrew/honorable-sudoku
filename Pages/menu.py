@@ -74,7 +74,7 @@ class Menu(tk.Frame, WidgetDisplay):
             "EXIT": tk.Button(self.__grp_body, text="EXIT")
         }
         try:
-            with open("./Frames/splash.json", encoding="utf-8") as tooltips:
+            with open("./Pages/splash.json", encoding="utf-8") as tooltips:
                 splash = json.load(tooltips)
             for s in splash:
                 self.__splash_tooltips[grp_opts.get(s).winfo_id()] = splash[s]

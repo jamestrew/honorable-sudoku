@@ -77,20 +77,21 @@ class Controller(Notification):
     def fetch_conflicts(self, x, y, val):
         conflicts = []  # list(pair) of coordinates that conflict with update.
 
-        if val == 0: return set(conflicts)  # clearing a cell cannot cause conflict
+        if val == 0: return set(conflicts)      # clearing a cell cannot cause conflict
+        blk_x, blk_y = (x - x%SUB, y - y%SUB)   # rounded to factor of 3
         config_index = {  # { config_key: DIM config }
-            ROW: self.__p.neighbor(y, COL),  # ROW
-            COL: self.__p.neighbor(x, ROW),  # COL
-            BLK: self.__p.neighbor(SUB*(y//3) + x//3)  # BLK
+            ROW: self.__p.neighbor(x, ROW),  # ROW
+            COL: self.__p.neighbor(y, COL),  # COL
+            BLK: self.__p.neighbor(blk_x + y//SUB)  # BLK
         }
         for (lookup_type, config) in config_index.items():
             config = list(map(int, config))
             if val in config:
                 offset = config.index(val)
                 conflicts.append({
-                    ROW: (offset, y),
-                    COL: (x, offset),
-                    BLK: (x//SUB + offset//SUB, y//SUB + offset%SUB)
+                    ROW: (x, offset),
+                    COL: (offset, y),
+                    BLK: (blk_x + offset//SUB, blk_y + offset%SUB)
                 }.get(lookup_type))
         return set(conflicts)
 

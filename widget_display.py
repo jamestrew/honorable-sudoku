@@ -234,6 +234,6 @@ class WidgetDisplay(tk.Tk, View):
 
 
 """ PAGE IMPORTS """
-from Frames.menu import Menu                     # noqa: E402
-from Frames.game_configure import GameConfigure  # noqa: E402
-from Frames.game import Game                     # noqa: E402
+from Pages.menu import Menu                     # noqa: E402
+from Pages.game_configure import GameConfigure  # noqa: E402
+from Pages.game import Game                     # noqa: E402

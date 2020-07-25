@@ -192,6 +192,8 @@ class Game(tk.Frame, WidgetDisplay):
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         self.__grid.update(x, y, val)
+        complete = self.__wdisplay.callback(check_win=None)
+        if complete: self.navbar_root_invoke(None)
 
     def select_cell(self, event):
         """

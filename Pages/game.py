@@ -11,11 +11,10 @@ class GridManager(object):
         Keeps track of the foreground and background widgets of each cell of
         the grid. Helps to manage updates to the collection of cells.
     """
-    __grid = []  # insertion order maintained
-
     def __init__(self):
         # Enum of bg and fg of each element of grid
         self.g_ref = {"bg": 0, "fg": 1}
+        self.__grid = []  # insertion order maintained
 
     def append(self, master:tk.Frame, value:tk.Label):
         """

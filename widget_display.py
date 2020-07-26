@@ -115,7 +115,7 @@ class WidgetDisplay(tk.Tk, View):
                 x_offset = {
                     h_align[0]: max(x_offset, user_w//2 - scrn_w//2),
                     h_align[1]: x_offset,
-                    h_align[2]: user_w - x_offset
+                    h_align[2]: user_w - scrn_w - x_offset
                 }.get(arg)
                 y_offset = max(y_offset, user_h//2 - scrn_h//2)
             else: raise KeyError(f"justify options: MID, LHS, RHS.")

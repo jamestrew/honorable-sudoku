@@ -12,8 +12,6 @@ class Notification(metaclass=ABCMeta):
 
 class Puzzle(object):
     """ Sudoku::Puzzle """
-    __grid = []         # grid: Z^1 array for board
-    __remaining_moves = 0  # number of moves until complete
 
     def __init__(self, grid=None, original=None, handle=None):
         """
@@ -30,6 +28,9 @@ class Puzzle(object):
         :raise TypeError: given (grid, original) not instance of list or Puzzle.
         :raise ValueError: failed validation following classical rules.
         """
+        self.__grid = []  # grid: Z^1 array for board
+        self.__remaining_moves = 0  # number of moves until complete
+
         self.__notif = handle  # ref back to Controller for notify
 
         def cell_parser(m_src, /):
@@ -70,7 +71,6 @@ class Puzzle(object):
         else:  # passed validation
             # puzzle properties
             self.__remaining_moves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
-            self.__permanent_cell = self.permanent_iterator
             self.__init_generate = (self.__grid[i] for i in range(DIM*DIM))
 
     # ( OVERRIDES ):
@@ -231,31 +231,6 @@ class Puzzle(object):
         otherwise, False.
         """
         return self.__remaining_moves == 0
-
-    @property
-    def permanent_iterator(self) -> iter:
-        """
-        :return: an iterator for all the cell indices that were non-empty in
-            the original puzzle.
-        """
-        return (i for i in range(DIM*DIM) if self.__grid[i].locked)
-
-    @property
-    def permanent_cell(self) -> (int, int):
-        """
-        This operation is cyclic and will loop back to the first cell when
-        running into a StopIteration.
-
-        :return: a single (x, y)-coordinate on the puzzle board that represents
-            a cell from the original puzzle; therefore, being locked/permanent.
-        """
-        c = None
-        while c is None:  # cyclic iterator
-            try:
-                c = next(self.__permanent_cell)
-            except StopIteration:
-                self.__permanent_cell = self.permanent_iterator
-        return c//DIM, c%DIM
 
     @property
     def init_iterator(self) -> int:

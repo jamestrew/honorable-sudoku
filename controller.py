@@ -4,11 +4,12 @@ from view import *
 
 class Controller(Notification):
     """ Sudoku::CONTROLLER """
-    __p = None  # Puzzle
-    __v = None  # View
+    def __init__(self):
+        self.__p = None  # Puzzle
+        self.__v = None  # View
 
-    __gamemode = 0
-    __difficulty = 0
+        self.__gamemode = 0
+        self.__difficulty = 0
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):

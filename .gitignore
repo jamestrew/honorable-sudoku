@@ -16,12 +16,6 @@ $RECYCLE.BIN/
 # pycharm byte-code
 /.idea
 /__pycache__
-/tests
 *.py[cod]
 *$py.class
 
-
-# Personal files for testing shitty code
-random.py
-GUI.py
-GUI_test.py

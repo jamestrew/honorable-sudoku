@@ -233,31 +233,6 @@ class Puzzle(object):
         return self.__remaining_moves == 0
 
     @property
-    def permanent_iterator(self) -> iter:
-        """
-        :return: an iterator for all the cell indices that were non-empty in
-            the original puzzle.
-        """
-        return (i for i in range(DIM*DIM) if self.__grid[i].locked)
-
-    @property
-    def permanent_cell(self) -> (int, int):
-        """
-        This operation is cyclic and will loop back to the first cell when
-        running into a StopIteration.
-
-        :return: a single (x, y)-coordinate on the puzzle board that represents
-            a cell from the original puzzle; therefore, being locked/permanent.
-        """
-        c = None
-        while c is None:  # cyclic iterator
-            try:
-                c = next(self.__permanent_cell)
-            except StopIteration:
-                self.__permanent_cell = self.permanent_iterator
-        return c//DIM, c%DIM
-
-    @property
     def init_iterator(self) -> int:
         """
         A single-use generator for initializaiton.

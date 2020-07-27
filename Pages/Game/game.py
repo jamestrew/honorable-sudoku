@@ -4,40 +4,8 @@ import string
 import time
 import tkinter as tk
 
-
-class GridManager(object):
-    """
-    Sudoku::GridManager
-        Keeps track of the foreground and background widgets of each cell of
-        the grid. Helps to manage updates to the collection of cells.
-    """
-    def __init__(self):
-        # Enum of bg and fg of each element of grid
-        self.g_ref = {"bg": 0, "fg": 1}
-        self.__grid = []  # insertion order maintained
-
-    def append(self, master:tk.Frame, value:tk.Label):
-        """
-        Adds the (bg, fg)-widget reference pair to the grid.
-        :param master:  refers to the background element
-        :param value:   refers to the foregorund element
-        """
-        self.__grid.append((master, value))
-
-    def background(self, x:int, y:int) -> tk.Frame:
-        return self.__grid[x*DIM + y][self.g_ref.get("bg")]
-
-    def foreground(self, x:int, y:int) -> tk.Label:
-        return self.__grid[x*DIM + y][self.g_ref.get("fg")]
-
-    def update(self, x:int, y:int, val:int):
-        self.foreground(x, y).config(text=(val if val>0 else ""))
-
-    @property   # returns depth of cell frame relative to winfo_toplevel()
-    def w_depth(self) -> int:
-        leaf = self.__grid[0][self.g_ref.get("fg")]
-        # the widget pathname is separated by exclamation points
-        return leaf.winfo_parent().count('!')  # determining the depth
+from Pages.Game.grid_manager import GridManager
+from Pages.Game.conflict_taskmanager import *
 
 
 class Game(tk.Frame, WidgetDisplay):
@@ -54,7 +22,7 @@ class Game(tk.Frame, WidgetDisplay):
         # ( grid )
         self.__grid = GridManager()     # widget-grid
         self.__selection = None         # selected cell coordinate on widget-grid
-        self.__task_conflict = None
+        self.__conflict_mgr = ConflictTaskManager(instance)
 
         # ( stopwatch )
         self.__start = .0
@@ -139,7 +107,7 @@ class Game(tk.Frame, WidgetDisplay):
         lbl_navbar_intr.bind("<Enter>", self.hoverstyle_toggle)
         lbl_navbar_intr.bind("<Leave>", self.hoverstyle_toggle)
         lbl_navbar_root.bind("<Button-1>", self.navbar_root_invoke)
-        lbl_navbar_intr.bind("<Button-1>", self.navbar_intr_invoke)
+        lbl_navbar_intr.bind("<Button-1>", self.navbar_gc_invoke)
 
         # ( stopwatch )
         frm_stopwatch = tk.Frame(self.__grp_head, **TRANSPARENT)
@@ -232,29 +200,37 @@ class Game(tk.Frame, WidgetDisplay):
         conflicts = self.__wdisplay.callback(
             fetch_conflicts=(*self.__selection, value)
         )
-
-        def toggle_conflicts(conflict_coords, revert=False):
-            if self.__task_conflict is None: return
-            for c in conflict_coords:
-                # reading constants
-                x, y = c
-                # highlight conflicts
-                self.__grid.background(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
-                self.__grid.foreground(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
-
+        if value in self.__conflict_mgr:
+            self.__conflict_mgr.remove(value)  # discard old highlight task
         # clear/revert all conflict highlights after 1 sec.
-        self.__task_conflict =\
-            self.__wdisplay.after(1000, lambda: toggle_conflicts(conflicts, revert=True))
-        toggle_conflicts(conflicts)
-
+        self.__conflict_mgr.add(
+            value,  # pair with value in which task refers to
+            self.__wdisplay.after(1000, lambda: self.reset_conflicts(value, conflicts))
+        )
+        # print(f"[Debug] ConflictTaskManager.add({value})")
+        self.toggle_conflicts(value, conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
 
+    def toggle_conflicts(self, value, conflict_coords, revert=False):
+        if not(value in self.__conflict_mgr): return
+        for c in conflict_coords:
+            # reading constants
+            x, y = c
+            # highlight conflicts
+            self.__grid.background(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
+            self.__grid.foreground(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
+
     def navbar_root_invoke(self, event):
-        self.__task_conflict = None
+        del self.__conflict_mgr
         self.__wdisplay.page_destroy()
         self.__wdisplay.open_page("Menu")
 
-    def navbar_intr_invoke(self, event):
-        self.__task_conflict = None
+    def navbar_gc_invoke(self, event):
+        del self.__conflict_mgr
         self.__wdisplay.page_destroy()
         self.__wdisplay.open_page("GameConfigure")
+
+    def reset_conflicts(self, value, conflict_coords):
+        # print(f"[Debug] ConflictTaskManager.remove({value})")
+        self.toggle_conflicts(value, conflict_coords, revert=True)
+        self.__conflict_mgr.remove(value)

@@ -23,9 +23,10 @@ class Menu(tk.Frame, WidgetDisplay):
 
         self.__wdisplay = instance
 
+        # fetching main containers
         grp_interact = wm.get_frm_interact()
         grp_feedback = wm.get_frm_feedback()
-
+        # configuring main containers
         grp_interact.grid_columnconfigure(0, weight=1)
         grp_feedback.grid_columnconfigure(0, weight=1)
 
@@ -36,7 +37,7 @@ class Menu(tk.Frame, WidgetDisplay):
 
         """ FOOT """
         self.__grp_foot = tk.Frame(grp_feedback, **TRANSPARENT)
-        self.__splash_tooltips = dict()
+        self.__splash_tooltips = dict()  # collection of splash messages
         self.__foot_markup()
         self.__grp_foot.grid(padx=16, pady=(32, 32), sticky="ew")
 
@@ -73,15 +74,6 @@ class Menu(tk.Frame, WidgetDisplay):
             "HELP": tk.Button(self.__grp_body, text="HELP"),
             "EXIT": tk.Button(self.__grp_body, text="EXIT")
         }
-        try:
-            with open("./Pages/splash.json", encoding="utf-8") as tooltips:
-                splash = json.load(tooltips)
-            for s in splash:
-                self.__splash_tooltips[grp_opts.get(s).winfo_id()] = splash[s]
-        except FileNotFoundError:
-            for (name, o) in grp_opts.items():
-                self.__splash_tooltips[o.winfo_id()] = [f"{name}:<splash message not found>"]
-
         for (name, o) in grp_opts.items():
             o.config(**CMD_CENTER)
             o.grid(padx=240, pady=(2, 3), sticky="ew")
@@ -89,6 +81,16 @@ class Menu(tk.Frame, WidgetDisplay):
             o.bind("<Leave>", self.__hoverstyle_toggle)
         grp_opts["PLAY"].config(command=self.play_invoke)
         grp_opts["EXIT"].config(command=self.__wdisplay.close_app)
+
+        try:  # fetching all splash messages for footer-text
+            with open("./Pages/splash.json", encoding="utf-8") as tooltips:
+                splash = json.load(tooltips)  # splash represents all splash messages
+            for s in splash:  # categorize splash messages by grp_opts keys
+                self.__splash_tooltips[grp_opts.get(s).winfo_id()] = splash[s]
+        except FileNotFoundError:
+            # default message on file-read error
+            for (name, o) in grp_opts.items():
+                self.__splash_tooltips[o.winfo_id()] = [f"{name}:<splash message not found>"]
 
     def __hoverstyle_toggle(self, event):
         foot_tip = self.__grp_foot.winfo_children()[0]  # dangerous assumption

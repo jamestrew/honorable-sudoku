@@ -12,7 +12,6 @@ class ConflictTask(object):
         self.task = task    # de-highlight task
 
     def __del__(self):  # cancellation of de-highlighting tasks
-        print(f"[Debug] \tCancelling {self.task}")
         self.__wdisplay.after_cancel(self.task)
 
     def __eq__(self, other): return self.value==other
@@ -43,7 +42,6 @@ class ConflictTaskArray(object):
         :param value: cell value
         :param task:  de-highlight task
         """
-        print(f"[Debug] \tCreating task entry... ({value}: {task})")
         if value in self.__task_q:  # replace old de-highlight task
             self.__task_q.remove(value)
         self.__task_q.add(ConflictTask(value, task, self.__wdisplay))
@@ -77,18 +75,13 @@ class ConflictTaskManager(object):
 
     def queue(self, x:int, y:int, value:int, task):
         locant = (x, y)
-        print(f"[Debug] conflict_mgr.queue({x}, {y}, {value}, <>)")
-        flag = False  # TEMP DEBUG VAR
         if not(locant in self.__update_q):
             self.__update_q[locant] = ConflictTaskArray(self.__wdisplay)
-            flag = True
-        print(f"[Debug] \tCreating locant entry... ({locant}: {value}: {task})\t\t{flag}")
         ct_arr = self.__update_q.get(locant)
         ct_arr.add(value, task)
 
     def dequeue(self, x:int, y:int, value:int):
         locant = (x, y)
-        print(f"[Debug] conflict_mgr.dequeue({x}, {y}, {value}, <>)")
         ct_arr = self.__update_q.get(locant)
         ct_arr.remove(value)
         if len(ct_arr) == 0: del ct_arr, self.__update_q[locant]

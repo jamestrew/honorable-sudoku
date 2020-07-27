@@ -1,4 +1,4 @@
-from view import View
+from MVC.View.view import View
 
 
 class TextDisplay(View):

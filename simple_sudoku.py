@@ -1,4 +1,4 @@
-from puzzle import Puzzle
+from MVC.Model.puzzle import Puzzle
 import copy
 
 # User selects difficulty

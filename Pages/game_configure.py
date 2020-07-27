@@ -1,7 +1,6 @@
 from resource import *
-from widget_display import WidgetDisplay
+from MVC.View.widget_display import WidgetDisplay
 from functools import partial
-import re
 import tkinter as tk
 
 

@@ -1,4 +1,4 @@
-from controller import *
+from MVC.Controller.controller import *
 
 
 if __name__ == "__main__":

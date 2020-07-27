@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from cell import Cell
+from MVC.Model.cell import Cell
 from functools import reduce
 from operator import concat
 from resource import *

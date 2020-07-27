@@ -1,5 +1,5 @@
 from resource import *
-from widget_display import WidgetDisplay
+from MVC.View.widget_display import WidgetDisplay
 import string
 import time
 import tkinter as tk

@@ -1,5 +1,5 @@
 import unittest
-from puzzle import Puzzle
+from MVC.Model.puzzle import Puzzle
 from resource import *
 
 

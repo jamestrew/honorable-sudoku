@@ -23,5 +23,5 @@ class View(metaclass=MetaUnion):
 
 
 """ ( VIEW::.. ) """
-from text_display import TextDisplay      # noqa
-from widget_display import WidgetDisplay  # noqa
+from MVC.View.text_display import TextDisplay      # noqa
+from MVC.View.widget_display import WidgetDisplay  # noqa

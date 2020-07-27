@@ -1,5 +1,5 @@
-from puzzle import *
-from view import *
+from MVC.Model.puzzle import *
+from MVC.View.view import *
 
 
 class Controller(Notification):

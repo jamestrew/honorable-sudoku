@@ -1,4 +1,4 @@
-from view import View
+from MVC.View.view import View
 from resource import *
 from string import digits
 import re

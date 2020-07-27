@@ -51,8 +51,10 @@ class Game(tk.Frame, WidgetDisplay):
 
         self.__wdisplay = instance
 
+        # ( grid )
         self.__grid = GridManager()     # widget-grid
         self.__selection = None         # selected cell coordinate on widget-grid
+        self.__task_conflict = None
 
         # ( stopwatch )
         self.__start = .0
@@ -232,6 +234,7 @@ class Game(tk.Frame, WidgetDisplay):
         )
 
         def toggle_conflicts(conflict_coords, revert=False):
+            if self.__task_conflict is None: return
             for c in conflict_coords:
                 # reading constants
                 x, y = c
@@ -239,16 +242,19 @@ class Game(tk.Frame, WidgetDisplay):
                 self.__grid.background(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
                 self.__grid.foreground(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
 
+        # clear/revert all conflict highlights after 1 sec.
+        self.__task_conflict =\
+            self.__wdisplay.after(1000, lambda: toggle_conflicts(conflicts, revert=True))
         toggle_conflicts(conflicts)
 
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
-        # clear/revert all conflict highlights after 1 sec.
-        self.__wdisplay.after(1000, lambda: toggle_conflicts(conflicts, revert=True))
 
     def navbar_root_invoke(self, event):
+        self.__task_conflict = None
         self.__wdisplay.page_destroy()
         self.__wdisplay.open_page("Menu")
 
     def navbar_intr_invoke(self, event):
+        self.__task_conflict = None
         self.__wdisplay.page_destroy()
         self.__wdisplay.open_page("GameConfigure")

@@ -1,7 +1,7 @@
 from view import View
 from resource import *
+from string import digits
 import re
-import string
 import tkinter as tk
 
 
@@ -157,7 +157,7 @@ class WidgetDisplay(tk.Tk, View):
         self.unbind("<Button-1>")   # MOUSE1
         self.unbind("<Button-2>")   # MOUSE2
         [   # NUMKEYS
-            self.unbind(num) for num in string.digits
+            self.unbind(num) for num in digits
         ]
 
     def close_app(self):

@@ -1,5 +1,6 @@
 from resource import *
 from MVC.View.widget_display import WidgetDisplay
+from functools import partial, update_wrapper
 import string
 import time
 import tkinter as tk
@@ -200,18 +201,24 @@ class Game(tk.Frame, WidgetDisplay):
         conflicts = self.__wdisplay.callback(
             fetch_conflicts=(*self.__selection, value)
         )
-        if value in self.__conflict_mgr:
-            self.__conflict_mgr.remove(value)  # discard old highlight task
+
+        def wrapped_partial(func, *args, **kwargs):
+            partial_func = partial(func, *args, **kwargs)
+            update_wrapper(partial_func, func)
+            return partial_func
+
         # clear/revert all conflict highlights after 1 sec.
-        self.__conflict_mgr.add(
+        self.__conflict_mgr.queue(
+            *self.__selection,
             value,  # pair with value in which task refers to
-            self.__wdisplay.after(1000, lambda: self.reset_conflicts(value, conflicts))
+            self.__wdisplay.after(1000, wrapped_partial(
+                self.reset_conflicts, *self.__selection, value, conflicts
+            ))
         )
         self.toggle_conflicts(value, conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
 
     def toggle_conflicts(self, value, conflict_coords, revert=False):
-        if not(value in self.__conflict_mgr): return
         for c in conflict_coords:
             # reading constants
             x, y = c
@@ -229,6 +236,6 @@ class Game(tk.Frame, WidgetDisplay):
         self.__wdisplay.page_destroy()
         self.__wdisplay.open_page("GameConfigure")
 
-    def reset_conflicts(self, value, conflict_coords):
+    def reset_conflicts(self, x:int, y:int, value, conflict_coords):
         self.toggle_conflicts(value, conflict_coords, revert=True)
-        self.__conflict_mgr.remove(value)
+        self.__conflict_mgr.dequeue(x, y, value)

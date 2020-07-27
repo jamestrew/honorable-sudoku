@@ -26,8 +26,11 @@ EASY_DIFF = 0  # easy
 HARD_DIFF = 1  # hard
 MAGI_DIFF = 2  # magic
 
-X,Y = 0,1  # Vector2 index enumerated
-W,H = 0,1
+X,Y = 0, 1  # Vector2 index enumerated
+W,H = 0, 1
+
+PAD_THIC = 5
+PAD_THIN = 0.5
 
 # ( colors )
 def s_rgb(color:str) -> tuple:  # noqa: E302

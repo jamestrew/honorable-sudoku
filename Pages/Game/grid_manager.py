@@ -8,6 +8,7 @@ class GridManager(object):
         Keeps track of the foreground and background widgets of each cell of
         the grid. Helps to manage updates to the collection of cells.
     """
+
     def __init__(self):
         # Enum of bg and fg of each element of grid
         self.g_ref = {"bg": 0, "fg": 1}

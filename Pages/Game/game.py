@@ -15,6 +15,7 @@ class Game(tk.Frame, WidgetDisplay):
         page_path: "honorable-sudoku/gameconfiguration/game-screen"
         Game screen.
     """
+
     def __init__(self, wm, instance):
         super().__init__()
 
@@ -64,12 +65,12 @@ class Game(tk.Frame, WidgetDisplay):
     def __stopwatch_update(self):
         self.__elapsedtime = time.time() - self.__start
         self.__stopwatch_settime(self.__elapsedtime)
-        self.__timer = self.after(100, self.__stopwatch_update)
+        self.__timer = self.__wdisplay.after(1000, self.__stopwatch_update)
 
     def __stopwatch_settime(self, elap):
         mins = int(elap/60)
         secs = int(elap - mins*60.0)
-        self.timestr.set("%02d:%02d"%(mins, secs))
+        self.timestr.set(f"{mins:02d}:{secs:02d}")
 
     def __stopwatch_start(self):
         if self.__running: return
@@ -118,7 +119,7 @@ class Game(tk.Frame, WidgetDisplay):
 
         lbl_stopwatch = tk.Label(frm_stopwatch, textvariable=self.timestr, **NAV_BAR)
         lbl_stopwatch.pack(side=tk.LEFT, fill=tk.Y)
-        self.__stopwatch_settime(self.__elapsedtime)
+        self.__stopwatch_settime(self.__elapsedtime)  # seems redundant. stopwatch runs fine without it?
 
     def __foot_markup(self):
         pass
@@ -132,14 +133,14 @@ class Game(tk.Frame, WidgetDisplay):
         frm_outline = tk.Frame(self.__grp_body, bg=XIKETIC)
         frm_outline.grid()
         frm_grid = tk.Frame(frm_outline, bg=XIKETIC)
-        frm_grid.grid(padx=5, pady=5)
+        frm_grid.grid(padx=PAD_THIC, pady=PAD_THIC)
 
         # ( instantiating grid with loaded puzzle )
         for c in range(DIM*DIM):
             # reading constants
             x, y = (c//DIM, c%DIM)
-            padx = (5 if (y>0 and y%SUB == 0) else .5, .5)
-            pady = (5 if (x>0 and x%SUB == 0) else .5, .5)
+            padx = (PAD_THIC if (y>0 and y%SUB == 0) else PAD_THIN, PAD_THIN)
+            pady = (PAD_THIC if (x>0 and x%SUB == 0) else PAD_THIN, PAD_THIN)
             value = self.__wdisplay.callback(init_next=None)
             locked = self.__wdisplay.callback(lock_check=(x, y))
 
@@ -170,6 +171,7 @@ class Game(tk.Frame, WidgetDisplay):
         Detects mouse input to provide feedback of cell selection.
         :param event: event listener
         """
+
         master = event.widget.master if isinstance(event.widget, tk.Label) \
             else event.widget  # bypass value-label
         try:

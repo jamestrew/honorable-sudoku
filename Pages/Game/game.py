@@ -207,7 +207,6 @@ class Game(tk.Frame, WidgetDisplay):
             value,  # pair with value in which task refers to
             self.__wdisplay.after(1000, lambda: self.reset_conflicts(value, conflicts))
         )
-        # print(f"[Debug] ConflictTaskManager.add({value})")
         self.toggle_conflicts(value, conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
 
@@ -231,6 +230,5 @@ class Game(tk.Frame, WidgetDisplay):
         self.__wdisplay.open_page("GameConfigure")
 
     def reset_conflicts(self, value, conflict_coords):
-        # print(f"[Debug] ConflictTaskManager.remove({value})")
         self.toggle_conflicts(value, conflict_coords, revert=True)
         self.__conflict_mgr.remove(value)

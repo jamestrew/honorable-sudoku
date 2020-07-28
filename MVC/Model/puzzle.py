@@ -30,6 +30,7 @@ class Puzzle(object):
         """
         self.__grid = []  # grid: Z^1 array for board
         self.__remaining_moves = 0  # number of moves until complete
+        self.__counts = {}  # counts of each number
 
         self.__notif = handle  # ref back to Controller for notify
 
@@ -56,8 +57,10 @@ class Puzzle(object):
         elif isinstance(grid, Puzzle):  # copy init
             self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
             self.__grid = reduce(concat, self.__grid, [])  # noqa
+            self.find_counts()
         elif isinstance(grid, list):    # copy init
             self.__grid = cell_parser(grid)
+            self.find_counts()
         else:  # the given grid is type-checked; otherwise, undefined behavior
             raise TypeError(
                 f"expected {type(self)} or {type([])}, but found {type(grid)}"
@@ -203,12 +206,17 @@ class Puzzle(object):
                 return False
             else:
                 self.__grid[DIM * x + y].update(val)  # set value
+                self.find_counts()
                 self.__remaining_moves += 1 if val == 0 else -1
                 if self.__notif: self.__notif.notify(x, y, val)
         return valid
 
     def lock_check(self, x:int, y:int, /) -> bool:
         return self.__grid[x*DIM + y].locked
+
+    def find_counts(self):
+        for num in range(1, DIM+1):
+            self.__counts[num] = self.__grid.count(num)
 
     @property
     def remaining_moves(self) -> int:
@@ -240,3 +248,10 @@ class Puzzle(object):
         :return: a i-th cell value, where i := the number of calls
         """
         return int(next(self.__init_generate))
+
+    @property
+    def counts(self) -> dict:
+        """
+        :return: a dict of number of times a number exists in the puzzle
+        """
+        return self.__counts

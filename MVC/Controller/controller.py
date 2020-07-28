@@ -4,6 +4,7 @@ from MVC.View.view import *
 
 class Controller(Notification):
     """ Sudoku::CONTROLLER """
+
     def __init__(self):
         self.__p = None  # Puzzle
         self.__v = None  # View
@@ -98,6 +99,9 @@ class Controller(Notification):
 
     def gameboard_update(self, x, y, val):
         return self.__p.update(x, y, val)
+
+    def count_update(self):
+        return self.__p.counts
 
     def init_next(self):
         return self.__p.init_iterator

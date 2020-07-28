@@ -175,3 +175,23 @@ P_FILL = {
     "expand": True,
     "fill": "both"
 }
+NUM_BG = {
+    "bg": CHAMPAGNE_PINK,
+    "width": 60,
+    "height": 60
+}
+NUM_FG = {
+    "bg": CHAMPAGNE_PINK,
+    "fg": XIKETIC,
+    "font": H3
+}
+CNT_BG = {
+    "bg": CHAMPAGNE_PINK,
+    "width": 25,
+    "height": 25
+}
+CNT_FG = {
+    "bg": CHAMPAGNE_PINK,
+    "fg": TWILIGHT_LAVENDER,
+    "font": P
+}

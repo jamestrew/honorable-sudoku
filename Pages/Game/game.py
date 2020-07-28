@@ -91,7 +91,7 @@ class Game(tk.Frame, WidgetDisplay):
         self.__stopwatch_settime(self.__elapsedtime)
 
     def __head_markup(self):
-        self.__grp_head.columnconfigure((0, 1), weight=1)
+        self.__grp_head.grid_rowconfigure((0, 1), weight=1)
 
         # ( breadcrumb navigation )
         frm_navbar = tk.Frame(self.__grp_head, **TRANSPARENT)
@@ -122,7 +122,39 @@ class Game(tk.Frame, WidgetDisplay):
         self.__stopwatch_settime(self.__elapsedtime)  # seems redundant. stopwatch runs fine without it?
 
     def __foot_markup(self):
-        pass
+        self.__grp_foot.grid_columnconfigure(0, weight=1)
+        self.__grp_foot.grid_rowconfigure(0, weight=1)
+
+        frm_top = tk.Frame(self.__grp_foot, bg=XIKETIC, bd=3)
+        frm_top.grid(pady=5)
+        frm_low = tk.Frame(self.__grp_foot, bg=XIKETIC, bd=3)
+        frm_low.grid(pady=5)
+
+        for num in range(5):  # top row (Nums 1-5)
+            frm_num = tk.Frame(frm_top, **NUM_BG)
+            frm_num.grid_columnconfigure(0, weight=1)
+            frm_num.grid_rowconfigure(0, weight=1)
+            frm_num.grid_propagate(False)
+            frm_num.grid(row=0, column=num, padx=PAD_THIC, pady=PAD_THIC)
+
+            frm_cnt = tk.Frame(frm_num, **CNT_BG)
+            frm_cnt.grid(sticky='ne')
+
+            lbl_cnt = tk.Label(frm_cnt, text=9, **CNT_FG).grid()
+            lbl_num = tk.Label(frm_num, text=num+1, **NUM_FG).grid()
+
+        for num in range(4):  # lower row (Nums 6-9)
+            frm_num = tk.Frame(frm_low, **NUM_BG)
+            frm_num.grid_columnconfigure(0, weight=1)
+            frm_num.grid_rowconfigure(0, weight=1)
+            frm_num.grid_propagate(False)
+            frm_num.grid(row=0, column=num, padx=PAD_THIC, pady=PAD_THIC)
+
+            frm_cnt = tk.Frame(frm_num, **CNT_BG)
+            frm_cnt.grid(sticky='ne')
+
+            lbl_cnt = tk.Label(frm_cnt, text=9, **CNT_FG).grid()
+            lbl_num = tk.Label(frm_num, text=num+6, **NUM_FG).grid()
 
     def __body_markup(self):
         self.__grp_body.grid_columnconfigure(0, weight=1)

@@ -130,6 +130,7 @@ class Game(tk.Frame, WidgetDisplay):
         frm_low = tk.Frame(self.__grp_foot, bg=XIKETIC, bd=3)
         frm_low.grid(pady=5)
 
+        self.counter = {}  # associates nums (1-9) with their respective cnt labels
         for num in range(DIM):
             frm = frm_top if num < 5 else frm_low
             frm_num = tk.Frame(frm, **NUM_BG)
@@ -141,8 +142,9 @@ class Game(tk.Frame, WidgetDisplay):
             frm_cnt = tk.Frame(frm_num, **CNT_BG)
             frm_cnt.grid(sticky='ne')
 
-            lbl_cnt = tk.Label(frm_cnt, text=9, **CNT_FG).grid()
-            lbl_num = tk.Label(frm_num, text=num+1, **NUM_FG).grid()
+            tk.Label(frm_num, text=num+1, **NUM_FG).grid()  # Number label (1-9)
+            self.counter[num+1] = tk.Label(frm_cnt, **CNT_FG)
+            self.counter[num+1].grid()
 
     def __body_markup(self):
         self.__grp_body.grid_columnconfigure(0, weight=1)
@@ -179,6 +181,8 @@ class Game(tk.Frame, WidgetDisplay):
             lbl_cell.grid()
             # track (bg, fg)-widget pair
             self.__grid.append(frm_cell, lbl_cell)
+
+        self.update_counter()  # initializes the counter
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
@@ -239,6 +243,7 @@ class Game(tk.Frame, WidgetDisplay):
         )
         self.toggle_conflicts(value, conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
+        self.update_counter()
 
     def toggle_conflicts(self, value, conflict_coords, revert=False):
         for c in conflict_coords:
@@ -247,6 +252,15 @@ class Game(tk.Frame, WidgetDisplay):
             # highlight conflicts
             self.__grid.background(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
             self.__grid.foreground(x, y).config(bg=CHAMPAGNE_PINK if revert else POPSTAR)
+
+    def update_counter(self):
+        """
+        Performs callback to retrieve new counts and updates the counter accordingly.
+        """
+
+        counts = self.__wdisplay.callback(count_update=None)  # returns dict of counts per num
+        for (num, cnt) in counts.items():
+            self.counter[num].config(text=cnt)
 
     def navbar_root_invoke(self, event):
         del self.__conflict_mgr

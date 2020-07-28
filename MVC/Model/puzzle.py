@@ -215,7 +215,7 @@ class Puzzle(object):
         return self.__grid[x*DIM + y].locked
 
     def find_counts(self):
-        for num in range(1, DIM+1):
+        for num in range(DIM+1):
             self.__counts[num] = self.__grid.count(num)
 
     @property

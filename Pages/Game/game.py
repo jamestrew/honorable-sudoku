@@ -91,7 +91,7 @@ class Game(tk.Frame, WidgetDisplay):
         self.__stopwatch_settime(self.__elapsedtime)
 
     def __head_markup(self):
-        self.__grp_head.grid_rowconfigure((0, 1), weight=1)
+        self.__grp_head.grid_columnconfigure((0, 1), weight=1)
 
         # ( breadcrumb navigation )
         frm_navbar = tk.Frame(self.__grp_head, **TRANSPARENT)
@@ -131,20 +131,23 @@ class Game(tk.Frame, WidgetDisplay):
         frm_low.grid(pady=5)
 
         self.counter = {}  # associates nums (1-9) with their respective cnt labels
-        for num in range(DIM):
-            frm = frm_top if num < 5 else frm_low
+        for num in range(DIM + 1):  # reserving 10 for <empty>
+            col = num if num != 0 else 10  # push empty to the bottom-right
+            frm = frm_top if col < 6 else frm_low
+
             frm_num = tk.Frame(frm, **NUM_BG)
             frm_num.grid_columnconfigure(0, weight=1)
             frm_num.grid_rowconfigure(0, weight=1)
             frm_num.grid_propagate(False)
-            frm_num.grid(row=0, column=num, padx=PAD_THIC, pady=PAD_THIC)
+            frm_num.grid(row=0, column=col, padx=PAD_THIC, pady=PAD_THIC)
 
             frm_cnt = tk.Frame(frm_num, **CNT_BG)
             frm_cnt.grid(sticky='ne')
 
-            tk.Label(frm_num, text=num+1, **NUM_FG).grid()  # Number label (1-9)
-            self.counter[num+1] = tk.Label(frm_cnt, **CNT_FG)
-            self.counter[num+1].grid()
+            val = num if num != 0 else ' '
+            tk.Label(frm_num, text=val, **NUM_FG).grid()  # Number label (1-9) + <empty>
+            self.counter[num] = tk.Label(frm_cnt, **CNT_FG)
+            self.counter[num].grid()
 
     def __body_markup(self):
         self.__grp_body.grid_columnconfigure(0, weight=1)
@@ -195,7 +198,7 @@ class Game(tk.Frame, WidgetDisplay):
         Detects mouse input to provide feedback of cell selection.
         :param event: event listener
         """
-
+        # print(event.widget.master)
         master = event.widget.master if isinstance(event.widget, tk.Label) \
             else event.widget  # bypass value-label
         try:

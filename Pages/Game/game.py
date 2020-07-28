@@ -157,7 +157,7 @@ class Game(tk.Frame, WidgetDisplay):
         # outline frame envelopes the grid view
         frm_outline = tk.Frame(self.__grp_body, bg=XIKETIC)
         frm_outline.grid()
-        frm_grid = tk.Frame(frm_outline, bg=XIKETIC)
+        frm_grid = tk.Frame(frm_outline, bg=XIKETIC, name="frm_grid")
         frm_grid.grid(padx=PAD_THIC, pady=PAD_THIC)
 
         # ( instantiating grid with loaded puzzle )
@@ -201,6 +201,7 @@ class Game(tk.Frame, WidgetDisplay):
         # print(event.widget.master)
         master = event.widget.master if isinstance(event.widget, tk.Label) \
             else event.widget  # bypass value-label
+        if 'frm_grid' not in str(master): return  # check parent widget is not frm_grid
         try:
             select_info = master.grid_info()  # dict(property, value)
             select_prev = self.__selection    # previous highlight
@@ -266,9 +267,10 @@ class Game(tk.Frame, WidgetDisplay):
             self.counter[num].config(text=cnt)
 
     def navbar_root_invoke(self, event):
-        del self.__conflict_mgr
-        self.__wdisplay.page_destroy()
-        self.__wdisplay.open_page("Menu")
+        print("[DEBUG] GAME COMPLETE")
+        # del self.__conflict_mgr
+        # self.__wdisplay.page_destroy()
+        # self.__wdisplay.open_page("Menu")
 
     def navbar_gc_invoke(self, event):
         del self.__conflict_mgr

@@ -186,6 +186,8 @@ class GameConfigure(tk.Frame, WidgetDisplay):
     def start_invoke(self):
         self.__wdisplay.page_destroy()
         self.__wdisplay.callback(load_game=(self.__mode_select, self.__diff_select))
+        if self.__wdisplay.callback(check_win=None):
+            self.__wdisplay.callback(toggle_win=None)
         self.__wdisplay.open_page("Game")
 
     def cancl_invoke(self):

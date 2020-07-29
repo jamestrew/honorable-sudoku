@@ -57,10 +57,8 @@ class Puzzle(object):
         elif isinstance(grid, Puzzle):  # copy init
             self.__grid = (grid.neighbor(i, ROW) for i in range(DIM))
             self.__grid = reduce(concat, self.__grid, [])  # noqa
-            self.find_counts()
         elif isinstance(grid, list):    # copy init
             self.__grid = cell_parser(grid)
-            self.find_counts()
         else:  # the given grid is type-checked; otherwise, undefined behavior
             raise TypeError(
                 f"expected {type(self)} or {type([])}, but found {type(grid)}"
@@ -75,6 +73,7 @@ class Puzzle(object):
             # puzzle properties
             self.__remaining_moves = reduce(lambda r, x: r if x>0 else r+1, self.__grid, 0)
             self.__init_generate = (self.__grid[i] for i in range(DIM*DIM))
+            self.find_counts()
 
     # ( OVERRIDES ):
     def __str__(self):

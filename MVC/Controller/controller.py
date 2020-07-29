@@ -44,18 +44,25 @@ class Controller(Notification):
             )
 
     def computer_ping(self):
+        """
+        Generator for update callbacks used by the computer-play mode.
+        :return: arguments in order to callback updates
+        """
+        # ( main loop - grid traversal )
         for c in range(DIM*DIM):
-            x, y = (c//DIM, c%DIM)
+            x, y = (c//DIM, c%DIM)  # read constants
+            # skip cell upon lock or occupied value
             if self.lock_check(x, y) or self.peek(x, y) != 0: continue
+            # ( possible values )
             for value in range(1, DIM+1):
-                valid = self.__p.update(x, y, value)
+                valid = self.__p.update(x, y, value)  # attempt update
                 if valid:
-                    yield x, y, value
+                    yield x, y, value  # update args
                     yield from self.computer_ping()
-
+                # collapse-of-recursion check
                 if valid and not self.__p.complete:
                     self.__p.update(x, y, 0)  # revert
-            break
+            break  # STOP ITER
 
     def fetch_gamemode(self):
         return self.__gamemode

@@ -12,6 +12,8 @@ class Controller(Notification):
         self.__gamemode = 0
         self.__difficulty = 0
 
+        self.__win_state = False
+
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         """
@@ -42,6 +44,22 @@ class Controller(Notification):
             raise TypeError(
                 f"expected {View} or {WidgetDisplay}, but found {self.__v}"
             )
+
+    def computer_ping(self):
+        for c in range(DIM*DIM):
+            x, y = (c//DIM, c%DIM)
+            if self.lock_check(x, y) or self.peek(x, y) != 0: continue
+            for value in range(1, DIM+1):
+                valid = self.__p.update(x, y, value)
+                if valid:
+                    yield x, y, value
+                    yield from self.computer_ping()
+                elif (x, y)==(DIM-1, DIM-1):
+                    self.__win_state = True
+
+                if valid and not self.__win_state:
+                    self.__p.update(x, y, 0)  # revert
+            break
 
     def gamemode_update(self, state):
         self.__gamemode = state
@@ -109,9 +127,12 @@ class Controller(Notification):
     def lock_check(self, x:int, y:int, /) -> bool:
         return self.__p.lock_check(x, y)
 
+    def peek(self, x, y):
+        return self.__p.peek(x, y)
+
     # METHODS ( PRIVATE ):
     def print_puzzle(self):
         print(self.__p)
 
     def check_win(self):
-        return self.__p.complete
+        return self.__win_state

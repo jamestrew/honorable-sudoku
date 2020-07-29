@@ -190,7 +190,6 @@ class Game(tk.Frame, WidgetDisplay):
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         self.__grid.update(x, y, val)
-        self.update_counter()
         complete = self.__wdisplay.callback(check_win=None)
         if complete: self.navbar_root_invoke(None)
 
@@ -248,6 +247,7 @@ class Game(tk.Frame, WidgetDisplay):
         )
         self.toggle_conflicts(value, conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
+        self.update_counter()
 
     def toggle_conflicts(self, value, conflict_coords, revert=False):
         for c in conflict_coords:

@@ -1,6 +1,6 @@
 from MVC.Model.puzzle import *
 from MVC.View.view import *
-import random as rand
+
 
 class Controller(Notification):
     """ Sudoku::CONTROLLER """
@@ -11,8 +11,6 @@ class Controller(Notification):
 
         self.__gamemode = 0
         self.__difficulty = 0
-
-        rand.seed()
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
@@ -46,7 +44,7 @@ class Controller(Notification):
             )
 
     def computer_ping(self):
-        for c in rand.sample(range(DIM*DIM), DIM*DIM):
+        for c in range(DIM*DIM):
             x, y = (c//DIM, c%DIM)
             if self.lock_check(x, y) or self.peek(x, y) != 0: continue
             for value in range(1, DIM+1):
@@ -70,6 +68,7 @@ class Controller(Notification):
         """
         self.__gamemode = gamemode
         self.__difficulty = difficulty
+
         dir_board = {  # all puzzle files
             EASY_DIFF: "Boards/easy.txt",
             HARD_DIFF: "Boards/hard.txt",

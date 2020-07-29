@@ -260,7 +260,7 @@ class Game(tk.Frame, WidgetDisplay):
 
         def delayed_move(instance, iterator):
             gradient = init_delay**(1 - max(self.__elapsedtime-1, 0)/over_delay)
-            gradient = -(-gradient//1)
+            gradient = max(-(-gradient//1), 1.)
             delayed_move.idle_delay = gradient
             active_delay = instance.after(
                 int(delayed_move.idle_delay),

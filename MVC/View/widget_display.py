@@ -14,6 +14,7 @@ class WidgetManager(object):
         All pages depend on the reference to the interact and feedback frames
         upon initialization using WidgetDisplay.open_frame(page_name).
     """
+
     def __init__(self, root, interact, feedback):
         super().__init__()
         self.__root = root  # app

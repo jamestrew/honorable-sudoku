@@ -254,25 +254,35 @@ class Game(tk.Frame, WidgetDisplay):
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
 
     def backtrack_automata(self):
+        """
+        Starts the backtracking calls back-and-forth with the Controller.
+        A recursively delayed move is made following an exponential-time model.
+
+        Change init_delay and over_delay as required to transform the model.
+        Upon finding the solution to complete the puzzle, the recursion is
+        terminated by cancelling all callbacks.
+        """
         ping = self.__wdisplay.callback(computer_ping=None)
         init_delay = 250  # initial delay in milliseconds (ms)
-        over_delay = 10.  # time to reach minimum delay of 1 ms
+        over_delay = 10.  # time in sec. to reach minimum delay of 1 ms
 
         def delayed_move(instance, iterator):
+            # ( delayed recursive call to next state )
             gradient = init_delay**(1 - max(self.__elapsedtime-1, 0)/over_delay)
-            gradient = max(-(-gradient//1), 1.)
-            delayed_move.idle_delay = gradient
+            gradient = int(max(-(-gradient//1), 1.))    # ceil(time gradient)
+            delayed_move.idle_delay = gradient          # output: time model
             active_delay = instance.after(
-                int(delayed_move.idle_delay),
+                delayed_move.idle_delay,    # delay time (ms)
                 lambda: delayed_move(instance, iterator)
             )
+            # ( deterministic finite-state machine )
             try:
-                args = next(iterator)
-            except (AttributeError, StopIteration):
-                instance.after_cancel(active_delay)
-            else:
+                args = next(iterator)                   # traversing to next state
+            except (AttributeError, StopIteration):     # error state caught by exception
+                instance.after_cancel(active_delay)     # END STATE
+            else:  # next possible state exists
                 instance.callback(gameboard_update=args)
-        delayed_move(self.__wdisplay, ping)
+        delayed_move(self.__wdisplay, ping)             # START STATE
 
     def toggle_conflicts(self, conflict_coords, revert=False):
         for c in conflict_coords:

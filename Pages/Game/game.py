@@ -255,10 +255,15 @@ class Game(tk.Frame, WidgetDisplay):
 
     def backtrack_automata(self):
         ping = self.__wdisplay.callback(computer_ping=None)
+        init_delay = 250  # initial delay in milliseconds (ms)
+        over_delay = 10.  # time to reach minimum delay of 1 ms
 
         def delayed_move(instance, iterator):
+            gradient = init_delay**(1 - max(self.__elapsedtime-1, 0)/over_delay)
+            gradient = -(-gradient//1)
+            delayed_move.idle_delay = gradient
             active_delay = instance.after(
-                delayed_move.idle_delay,
+                int(delayed_move.idle_delay),
                 lambda: delayed_move(instance, iterator)
             )
             try:
@@ -267,7 +272,6 @@ class Game(tk.Frame, WidgetDisplay):
                 instance.after_cancel(active_delay)
             else:
                 instance.callback(gameboard_update=args)
-        delayed_move.idle_delay = 100
         delayed_move(self.__wdisplay, ping)
 
     def toggle_conflicts(self, conflict_coords, revert=False):

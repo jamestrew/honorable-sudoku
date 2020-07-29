@@ -1,6 +1,6 @@
 from MVC.Model.puzzle import *
 from MVC.View.view import *
-
+import random as rand
 
 class Controller(Notification):
     """ Sudoku::CONTROLLER """
@@ -12,7 +12,7 @@ class Controller(Notification):
         self.__gamemode = 0
         self.__difficulty = 0
 
-        self.__win_state = False
+        rand.seed()
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
@@ -46,7 +46,7 @@ class Controller(Notification):
             )
 
     def computer_ping(self):
-        for c in range(DIM*DIM):
+        for c in rand.sample(range(DIM*DIM), DIM*DIM):
             x, y = (c//DIM, c%DIM)
             if self.lock_check(x, y) or self.peek(x, y) != 0: continue
             for value in range(1, DIM+1):
@@ -54,17 +54,13 @@ class Controller(Notification):
                 if valid:
                     yield x, y, value
                     yield from self.computer_ping()
-                elif (x, y)==(DIM-1, DIM-1):
-                    self.__win_state = True
 
-                if valid and not self.__win_state:
+                if valid and not self.__p.complete:
                     self.__p.update(x, y, 0)  # revert
             break
 
-    def gamemode_update(self, state):
-        self.__gamemode = state
-        gm = self.__gamemode
-        print(f"[Debug] Gamemode updated: 0x{hex(gm)[2:].zfill(2).upper()}")
+    def fetch_gamemode(self):
+        return self.__gamemode
 
     def load_game(self, gamemode, difficulty):
         """
@@ -130,9 +126,8 @@ class Controller(Notification):
     def peek(self, x, y):
         return self.__p.peek(x, y)
 
-    # METHODS ( PRIVATE ):
     def print_puzzle(self):
         print(self.__p)
 
     def check_win(self):
-        return self.__win_state
+        return self.__p.complete

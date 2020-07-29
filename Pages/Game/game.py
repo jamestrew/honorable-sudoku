@@ -20,6 +20,7 @@ class Game(tk.Frame, WidgetDisplay):
         super().__init__()
 
         self.__wdisplay = instance
+        self.__gamemode = self.__wdisplay.callback(fetch_gamemode=None)
 
         # ( grid )
         self.__grid = GridManager()     # widget-grid
@@ -56,11 +57,13 @@ class Game(tk.Frame, WidgetDisplay):
         self.__body_markup()
         self.__grp_body.grid(padx=16, pady=(16, 16), sticky="nsew")
 
-        # ( bindings )
-        self.__wdisplay.bind("<Button-1>", self.select_cell)    # MOUSE1
-        [  # NUMKEYS bound to gameboard_update (try_cell)
-            self.__wdisplay.bind(num, self.try_cell) for num in string.digits
-        ]
+        if self.__gamemode == USER_PLAY:
+            # ( bindings )
+            self.__wdisplay.bind("<Button-1>", self.select_cell)    # MOUSE1
+            [  # NUMKEYS bound to gameboard_update (try_cell)
+                self.__wdisplay.bind(num, self.try_cell) for num in string.digits
+            ]
+        else: self.__wdisplay.after(1000, self.backtrack_automata)
 
     def __stopwatch_update(self):
         self.__elapsedtime = time.time() - self.__start
@@ -80,7 +83,7 @@ class Game(tk.Frame, WidgetDisplay):
 
     def __stopwatch_stop(self):
         if not self.__running: return
-        self.__wdisplay.after_cancel(self._timer)
+        self.__wdisplay.after_cancel(self.__timer)
         self.__elapsedtime = time.time() - self.__start
         self.__stopwatch_settime(self.__elapsedtime)
         self.__running = False
@@ -190,8 +193,9 @@ class Game(tk.Frame, WidgetDisplay):
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         self.__grid.update(x, y, val)
-        complete = self.__wdisplay.callback(check_win=None)
-        if complete: self.navbar_root_invoke(None)
+        if self.__wdisplay.callback(check_win=None):
+            self.__stopwatch_stop()
+            print(f"[Debug] GAME COMPLETE")
 
     def select_cell(self, event):
         """
@@ -245,11 +249,32 @@ class Game(tk.Frame, WidgetDisplay):
                 self.reset_conflicts, *self.__selection, value, conflicts
             ))
         )
-        self.toggle_conflicts(value, conflicts)  # highlight all conflicts
+        self.toggle_conflicts(conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
         self.update_counter()
 
-    def toggle_conflicts(self, value, conflict_coords, revert=False):
+    def backtrack_automata(self):
+        ping = self.__wdisplay.callback(computer_ping=None)
+        init_delay = 250  # initial delay in milliseconds (ms)
+        over_delay = 10.  # time to reach minimum delay of 1 ms
+
+        def delayed_move(instance, iterator):
+            gradient = init_delay**(1 - max(self.__elapsedtime-1, 0)/over_delay)
+            gradient = max(-(-gradient//1), 1.)
+            delayed_move.idle_delay = gradient
+            active_delay = instance.after(
+                int(delayed_move.idle_delay),
+                lambda: delayed_move(instance, iterator)
+            )
+            try:
+                args = next(iterator)
+            except (AttributeError, StopIteration):
+                instance.after_cancel(active_delay)
+            else:
+                instance.callback(gameboard_update=args)
+        delayed_move(self.__wdisplay, ping)
+
+    def toggle_conflicts(self, conflict_coords, revert=False):
         for c in conflict_coords:
             # reading constants
             x, y = c
@@ -261,16 +286,14 @@ class Game(tk.Frame, WidgetDisplay):
         """
         Performs callback to retrieve new counts and updates the counter accordingly.
         """
-
         counts = self.__wdisplay.callback(count_update=None)  # returns dict of counts per num
         for (num, cnt) in counts.items():
             self.counter[num].config(text=cnt)
 
     def navbar_root_invoke(self, event):
-        print("[DEBUG] GAME COMPLETE")
-        # del self.__conflict_mgr
-        # self.__wdisplay.page_destroy()
-        # self.__wdisplay.open_page("Menu")
+        del self.__conflict_mgr
+        self.__wdisplay.page_destroy()
+        self.__wdisplay.open_page("Menu")
 
     def navbar_gc_invoke(self, event):
         del self.__conflict_mgr
@@ -278,5 +301,5 @@ class Game(tk.Frame, WidgetDisplay):
         self.__wdisplay.open_page("GameConfigure")
 
     def reset_conflicts(self, x:int, y:int, value, conflict_coords):
-        self.toggle_conflicts(value, conflict_coords, revert=True)
+        self.toggle_conflicts(conflict_coords, revert=True)
         self.__conflict_mgr.dequeue(x, y, value)

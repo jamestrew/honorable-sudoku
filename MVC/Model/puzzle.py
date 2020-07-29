@@ -213,6 +213,9 @@ class Puzzle(object):
     def lock_check(self, x:int, y:int, /) -> bool:
         return self.__grid[x*DIM + y].locked
 
+    def peek(self, x:int, y:int) -> int:
+        return int(self.__grid[x*DIM + y])
+
     def find_counts(self):
         for num in range(DIM+1):
             self.__counts[num] = self.__grid.count(num)

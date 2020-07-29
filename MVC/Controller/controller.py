@@ -43,10 +43,22 @@ class Controller(Notification):
                 f"expected {View} or {WidgetDisplay}, but found {self.__v}"
             )
 
-    def gamemode_update(self, state):
-        self.__gamemode = state
-        gm = self.__gamemode
-        print(f"[Debug] Gamemode updated: 0x{hex(gm)[2:].zfill(2).upper()}")
+    def computer_ping(self):
+        for c in range(DIM*DIM):
+            x, y = (c//DIM, c%DIM)
+            if self.lock_check(x, y) or self.peek(x, y) != 0: continue
+            for value in range(1, DIM+1):
+                valid = self.__p.update(x, y, value)
+                if valid:
+                    yield x, y, value
+                    yield from self.computer_ping()
+
+                if valid and not self.__p.complete:
+                    self.__p.update(x, y, 0)  # revert
+            break
+
+    def fetch_gamemode(self):
+        return self.__gamemode
 
     def load_game(self, gamemode, difficulty):
         """
@@ -56,6 +68,7 @@ class Controller(Notification):
         """
         self.__gamemode = gamemode
         self.__difficulty = difficulty
+
         dir_board = {  # all puzzle files
             EASY_DIFF: "Boards/easy.txt",
             HARD_DIFF: "Boards/hard.txt",
@@ -109,7 +122,9 @@ class Controller(Notification):
     def lock_check(self, x:int, y:int, /) -> bool:
         return self.__p.lock_check(x, y)
 
-    # METHODS ( PRIVATE ):
+    def peek(self, x, y):
+        return self.__p.peek(x, y)
+
     def print_puzzle(self):
         print(self.__p)
 

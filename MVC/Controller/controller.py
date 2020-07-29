@@ -80,9 +80,9 @@ class Controller(Notification):
         self.__difficulty = difficulty
 
         dir_board = {  # all puzzle files
-            EASY_DIFF: "Boards/easy.txt",
-            HARD_DIFF: "Boards/hard.txt",
-            MAGI_DIFF: "Boards/magic.txt"
+            EASY_DIFF: "Boards/easy.puzzle",
+            HARD_DIFF: "Boards/hard.puzzle",
+            MAGI_DIFF: "Boards/magic.puzzle"
         }.get(difficulty)
         flat_grid = None  # flattened grid from input
         try:

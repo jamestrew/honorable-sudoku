@@ -20,8 +20,8 @@ class GameConfigure(tk.Frame, WidgetDisplay):
             HARD_DIFF: "hard",
             MAGI_DIFF: "magic"
         }
-        self.__mode_select = USER_PLAY
-        self.__diff_select = EASY_DIFF
+        self.__mode_select = self.__wdisplay.callback(fetch_gamemode=None)
+        self.__diff_select = self.__wdisplay.callback(fetch_difficulty=None)
 
         grp_interact = wm.get_frm_interact()
         grp_feedback = wm.get_frm_feedback()

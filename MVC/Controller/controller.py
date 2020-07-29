@@ -9,8 +9,8 @@ class Controller(Notification):
         self.__p = None  # Puzzle
         self.__v = None  # View
 
-        self.__gamemode = 0
-        self.__difficulty = 0
+        self.__gamemode = USER_PLAY
+        self.__difficulty = EASY_DIFF
 
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
@@ -59,6 +59,9 @@ class Controller(Notification):
 
     def fetch_gamemode(self):
         return self.__gamemode
+
+    def fetch_difficulty(self):
+        return self.__difficulty
 
     def load_game(self, gamemode, difficulty):
         """

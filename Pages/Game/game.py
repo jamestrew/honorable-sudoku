@@ -193,6 +193,7 @@ class Game(tk.Frame, WidgetDisplay):
     # METHODS ( PUBLIC ):
     def notify(self, x, y, val, /):
         self.__grid.update(x, y, val)
+        self.update_counter()
         if self.__wdisplay.callback(check_win=None):
             self.__stopwatch_stop()
             print(f"[Debug] GAME COMPLETE")
@@ -251,7 +252,6 @@ class Game(tk.Frame, WidgetDisplay):
         )
         self.toggle_conflicts(conflicts)  # highlight all conflicts
         self.__wdisplay.callback(gameboard_update=(*self.__selection, value))
-        self.update_counter()
 
     def backtrack_automata(self):
         ping = self.__wdisplay.callback(computer_ping=None)

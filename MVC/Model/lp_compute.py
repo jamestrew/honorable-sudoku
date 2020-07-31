@@ -45,11 +45,10 @@ class LpCompute(object):
         self.set_objective(0)
 
         # classical-sudoku gamerule contraint
-        for r in self.__rows:
-            for c in self.__cols:
-                self.set_objective(
-                    (lpSum([self.choices[v][r][c] for v in self.__vals]) == 1, "")
-                )
+        for r, c in itertools.product(self.__rows, self.__cols):
+            self.set_objective(
+                (lpSum([self.choices[v][r][c] for v in self.__vals]) == 1, "")
+            )
         self.set_value_constraits()
 
         #

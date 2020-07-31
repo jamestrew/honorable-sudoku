@@ -59,7 +59,7 @@ class LpCompute(object):
                 self.set_objective(
                     (self.choices[str(v)][str(x + 1)][str(y + 1)] == 1, "")
                 )
-        self.problem.solve()
+        self.problem.solve(PULP_CBC_CMD(msg=False))
 
     def update_iter(self, grid):
         for arg in itertools.product(self.__rows, self.__cols, self.__vals):

@@ -1,5 +1,6 @@
 from MVC.Model.puzzle import *
 from MVC.View.view import *
+from MVC.Model.lp_compute import LpCompute
 
 
 class Controller(Notification):
@@ -44,17 +45,26 @@ class Controller(Notification):
             )
 
     def computer_ping(self):
+        # ( constraint problem )
+        lp = LpCompute()
+        lp.solve(self.__p)
+        if lp.optimal:
+            return lp.update_iter
+        else:
+            return self.backtracking_iter()
+
+    def backtracking_iter(self):
         """
         Generator for update callbacks used by the computer-play mode.
         :return: arguments in order to callback updates
         """
         # ( main loop - grid traversal )
-        for c in range(DIM*DIM):
-            x, y = (c//DIM, c%DIM)  # read constants
+        for c in range(DIM * DIM):
+            x, y = (c // DIM, c % DIM)  # read constants
             # skip cell upon lock or occupied value
             if self.lock_check(x, y) or self.peek(x, y) != 0: continue
             # ( possible values )
-            for value in range(1, DIM+1):
+            for value in range(1, DIM + 1):
                 valid = self.__p.update(x, y, value)  # attempt update
                 if valid:
                     yield x, y, value  # update args

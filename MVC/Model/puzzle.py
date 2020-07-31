@@ -204,7 +204,7 @@ class Puzzle(object):
                 print(f"[Debug] Invalid move. This cell is locked.")
                 return False
             else:
-                self.__grid[DIM * x + y].update(val)  # set value
+                self.__grid[DIM * x + y].update(Cell(val))  # set value
                 self.find_counts()
                 self.__remaining_moves += 1 if val == 0 else -1
                 if self.__notif: self.__notif.notify(x, y, val)

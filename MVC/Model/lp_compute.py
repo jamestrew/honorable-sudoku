@@ -2,6 +2,7 @@ from resource import *
 from pulp import *
 from pulp.solverdir import *
 from string import digits
+import itertools
 
 
 class LpCompute(object):
@@ -63,7 +64,7 @@ class LpCompute(object):
 
     @property
     def update_iter(self):
-        for arg in zip(self.__rows, self.__cols, self.__vals):
+        for arg in itertools.product(self.__rows, self.__cols, self.__vals):
             x, y, v = arg
             if value(self.choices[v][x][y]) == 1:
                 yield int(x)-1, int(y)-1, int(v)

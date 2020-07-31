@@ -68,7 +68,7 @@ class Controller(Notification):
                 valid = self.__p.update(x, y, value)  # attempt update
                 if valid:
                     yield x, y, value  # update args
-                    yield from self.computer_ping()
+                    yield from self.backtracking_iter()
                 # collapse-of-recursion check
                 if valid and not self.__p.complete:
                     self.__p.update(x, y, 0)  # revert

@@ -44,10 +44,11 @@ class LpCompute(object):
         self.set_objective(0)
 
         # classical-sudoku gamerule contraint
-        for (r, c) in zip(self.__rows, self.__cols):
-            self.set_objective(
-                (lpSum([self.choices[v][r][c] for v in self.__vals]) == 1, "")
-            )
+        for r in self.__rows:
+            for c in self.__cols:
+                self.set_objective(
+                    (lpSum([self.choices[v][r][c] for v in self.__vals]) == 1, "")
+                )
         self.set_value_constraits()
 
         #
@@ -65,7 +66,18 @@ class LpCompute(object):
         for arg in zip(self.__rows, self.__cols, self.__vals):
             x, y, v = arg
             if value(self.choices[v][x][y]) == 1:
-                yield x, y, v
+                yield int(x)-1, int(y)-1, int(v)
 
     @property
     def optimal(self): return self.problem.status
+
+    def __str__(self):
+        grid = []
+        for r in self.__rows:
+            for c in self.__cols:
+                for v in self.__vals:
+                    if value(self.choices[v][r][c] == 0):
+                        grid.append(v)
+        print(len(grid))
+        return '\n'.join(' '.join(map(str, grid[i: i+DIM]))
+                         for (i) in range(0, len(grid), DIM))

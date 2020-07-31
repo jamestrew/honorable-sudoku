@@ -62,10 +62,10 @@ class LpCompute(object):
                 )
         self.problem.solve()
 
-    @property
-    def update_iter(self):
+    def update_iter(self, grid):
         for arg in itertools.product(self.__rows, self.__cols, self.__vals):
             x, y, v = arg
+            if grid.lock_check(int(x)-1, int(y)-1): continue
             if value(self.choices[v][x][y]) == 1:
                 yield int(x)-1, int(y)-1, int(v)
 

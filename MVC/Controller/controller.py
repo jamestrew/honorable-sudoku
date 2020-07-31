@@ -49,7 +49,6 @@ class Controller(Notification):
         lp = LpCompute()
         lp.solve(self.__p)
         if lp.optimal:
-            print(lp)
             return lp.update_iter
         else:
             return self.backtracking_iter()

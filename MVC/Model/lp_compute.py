@@ -76,7 +76,7 @@ class LpCompute(object):
         for r in self.__rows:
             for c in self.__cols:
                 for v in self.__vals:
-                    if value(self.choices[v][r][c] == 0):
+                    if value(self.choices[v][r][c]) == 1:
                         grid.append(v)
         print(len(grid))
         return '\n'.join(' '.join(map(str, grid[i: i+DIM]))

@@ -1,6 +1,5 @@
 from resource import *
 from pulp import *
-from pulp.solverdir import *
 from string import digits
 import itertools
 

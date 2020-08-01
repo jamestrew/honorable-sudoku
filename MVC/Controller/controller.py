@@ -97,7 +97,8 @@ class Controller(Notification):
             print(f"[Debug] Puzzle loaded: gamemode({gamemode}), difficulty({difficulty})")
             # self.print_puzzle()  # [Debug]
         finally:
-            self.__p = Puzzle(flat_grid, handle=self)
+            if self.__difficulty == MAGI_DIFF: self.__p = Magic_Puzzle(flat_grid, handle=self)
+            else: self.__p = Puzzle(flat_grid, handle=self)
 
     def fetch_conflicts(self, x, y, val):
         conflicts = []  # list(pair) of coordinates that conflict with update.

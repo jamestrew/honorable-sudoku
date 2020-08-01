@@ -292,7 +292,7 @@ class Magic_Puzzle(Puzzle):
                 if move >= 0 and move < DIM**2 and \
                         move_row in range(upper, lower+1) and \
                         move_col in range(left, right+1):
-                    cells.append(grid[move])
+                    cells.append(self.__grid[move])
         return cells
 
     def __kings_move(self, index:int, /) -> list:
@@ -309,7 +309,7 @@ class Magic_Puzzle(Puzzle):
 
         start = bounds.get(UPPER)*DIM + bounds.get(LEFT)
         blk = (
-            grid[i:i+width]
+            self.__grid[i:i+width]
             for i in range(start, height*DIM+start, DIM)
         )
         return reduce(concat, blk, [])

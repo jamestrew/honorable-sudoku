@@ -140,9 +140,9 @@ class Puzzle(object):
         :param index: range(0, DIM)
         :return: a block at the specified BLK-index.
         """
-        offset = 2*DIM*(index//3)  # skip to next row of submatrices
-        n = DIM//3  # submatrix size (n*n)
-        blk_nbr =(  # expected: DIM/3 x DIM/3 submatrix
+        offset = 2*DIM*(index//SUB)  # skip to next row of submatrices
+        n = DIM//SUB  # submatrix size (n*n)
+        blk_nbr = (  # expected: DIM/3 x DIM/3 submatrix
             self.__grid[(n*k)+offset: n*(k+1)+offset]
             for k in range(index, (2*n+index)+1, n)
         )
@@ -191,8 +191,8 @@ class Puzzle(object):
             # Find neighbor at specified (x,y) of grid
             v_nbr = list(map(int, self.neighbor(y, COL)))
             h_nbr = list(map(int, self.neighbor(x, ROW)))
-            b_nbr = list(map(int, self.neighbor(SUB*(x//3) + y//3)))
-            v_nbr[x] = h_nbr[y] = b_nbr[SUB*(x%3) + y%3] = val  # peek-update
+            b_nbr = list(map(int, self.neighbor(SUB*(x//SUB) + y//SUB)))
+            v_nbr[x] = h_nbr[y] = b_nbr[SUB*(x%SUB) + y%SUB] = val  # peek-update
 
             # and-map of indexed col, row, and blk distinctness
             valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
@@ -257,3 +257,84 @@ class Puzzle(object):
         :return: a dict of number of times a number exists in the puzzle
         """
         return self.__counts
+
+
+class Magic_Puzzle(Puzzle):
+    """
+    Sudoku::Puzzle with magic ruleset.
+    Inherits base rules, methods/properties from Puzzle.
+
+    Adds three new lookups for neighbor:
+        - __knights_move (max len = 8)
+        - __kings_move (max len = 8)
+        - __adjacent (max len = 4)
+    """
+
+    def __knights_move(self, index:int, /) -> list:
+        """
+        Neighboring cells created by Chess' knight's move.
+
+        :param index: range(0, DIM*DIM)
+        :return: list of cell values of valid knight moves.
+
+        """
+        pass
+
+    def __kings_move(self, index:int, /) -> list:
+        """
+        Neighboring cells created by Chess' king's move.
+
+        :param index: range(0, DIM*DIM)
+        :return: list of cell values of valid king moves.
+
+        """
+        # by default, box is 3x3
+        height = 3  # default height of king's reign
+        width = 3  # default width of king's reign
+
+        # determine start index, height, width of king's move
+        if index < DIM:  # index in top row
+            start = index-1 if index != 0 else index
+            height = 2
+            if index in [0, DIM-1]: width = 2
+        elif index > (DIM*(DIM-1)):  # index in bottom row
+            start = index-DIM if index == (DIM*(DIM-1)) else index-DIM-1
+            height = 2
+            if index in [(DIM*(DIM-1)), (DIM**2 - 1)]: width = 2
+        elif index%DIM == 0:
+            # index in left-most col
+            start = index - DIM
+            width = 2
+        elif (index+1)%DIM == 0:
+            # index in right-most col
+            start = index - DIM - 1
+            width = 2
+        else:  # index between col 1 and 7
+            start = index - DIM -1
+            width = 3
+
+        blk = (
+            self.__grid[i:i+width]
+            for i in range(start, height*DIM+start, DIM)
+        )
+        return reduce(concat, blk, [])
+
+    def __adjacent(self, index:int, /) -> list:
+        """
+        Adjacent neighboring cells (up/down, left/right by 1 cell).
+        AKA king's move minus diagonals.
+
+        :param index: range(0, DIM*DIM)
+        :return: list of cell values of adjacent cells.
+
+        """
+        cells = []
+        if index < DIM*DIM - DIM:  # get cell below
+            cells.append(self.__grid[index + DIM])
+        if index >= DIM:  # get cell above
+            cells.append(self.__grid[index - DIM])
+        if index%DIM != 0:  # get cell left
+            cells.append(self.__grid[index - 1])
+        if (index+1)%DIM != 0:  # get cell right
+            cells.append(self.__grid[index + 1])
+        return cells

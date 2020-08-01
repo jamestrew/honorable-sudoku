@@ -11,6 +11,11 @@ BLK = 0  # box/block
 COL = 1  # column
 ROW = 2  # row
 
+UPPER = 0
+LOWER = 1
+LEFT = 2
+RIGHT = 3
+
 # MainMenu options
 PLAY = 0
 LOAD = 1
@@ -33,6 +38,8 @@ PAD_THIC = 5
 PAD_THIN = 0.5
 
 # ( colors )
+
+
 def s_rgb(color:str) -> tuple:  # noqa: E302
     """
     Given a color-code in hex, converted into RGB.
@@ -41,6 +48,7 @@ def s_rgb(color:str) -> tuple:  # noqa: E302
     """
     return tuple(int(color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
 
+
 def s_hex(color:tuple) -> str:  # noqa: E302
     """
     Given a color-code in RGB, converted into a hex-string.
@@ -48,6 +56,7 @@ def s_hex(color:tuple) -> str:  # noqa: E302
     :return: the hex-string
     """
     return "#%02x%02x%02x"%color
+
 
 def color_shift(color:tuple, offset:tuple) -> str:  # noqa: E302
     return s_hex(tuple(np.subtract(color, offset)))

@@ -28,7 +28,7 @@ class Magic_Puzzle(Puzzle):
         upper, lower = bounds.get(UPPER), bounds.get(LOWER)
         left, right = bounds.get(LEFT), bounds.get(RIGHT)
 
-        cells = []
+        cells = {}
         for dx, dy in permutations([1,2,-1,-2], 2):
             if abs(dx) != abs(dy):
                 move = (index+dx) + (DIM*dy)
@@ -37,7 +37,7 @@ class Magic_Puzzle(Puzzle):
                 if move >= 0 and move < DIM**2 and \
                         upper <= move_row <= lower and \
                         left <= move_col <= right:
-                    cells.append(self._grid[move])
+                    cells[move] = self._grid[move]
         return cells
 
     def _klookup(self, index:int, /) -> list:
@@ -52,11 +52,11 @@ class Magic_Puzzle(Puzzle):
         width = bounds.get(RIGHT) - bounds.get(LEFT) + 1  # width of move
         start = bounds.get(UPPER)*DIM + bounds.get(LEFT)  # top-left index of move rng
 
-        blk = (
-            self._grid[i:i+width]
-            for i in range(start, height*DIM+start, DIM)
-        )
-        return reduce(concat, blk, [])
+        cells = {}
+        for i in range(start, height*DIM+start, DIM):
+            for j in range(width):
+                cells[i+j] = self._grid[i+j]
+        return cells
 
     def _alookup(self, index:int, /) -> list:
         """
@@ -66,15 +66,15 @@ class Magic_Puzzle(Puzzle):
         :param index: range(0, DIM*DIM)
         :return: list of cell values of adjacent cells.
         """
-        cells = []
+        cells = {}
         if index < DIM*DIM - DIM:  # get cell below
-            cells.append(self._grid[index + DIM])
+            cells[index + DIM] = self._grid[index + DIM]
         if index >= DIM:  # get cell above
-            cells.append(self._grid[index - DIM])
+            cells[index - DIM] = self._grid[index - DIM]
         if index%DIM != 0:  # get cell left
-            cells.append(self._grid[index - 1])
+            cells[index - 1] = self._grid[index - 1]
         if (index+1)%DIM != 0:  # get cell right
-            cells.append(self._grid[index + 1])
+            cells[index + 1] = self._grid[index + 1]
         return cells
 
     def __blk_helper(self, index:int, rng:int, /) -> dict:
@@ -145,9 +145,9 @@ class Magic_Puzzle(Puzzle):
             v_nbr = list(map(int, self.neighbor(y, COL)))
             h_nbr = list(map(int, self.neighbor(x, ROW)))
             b_nbr = list(map(int, self.neighbor(SUB*(x//SUB) + y//SUB)))
-            n_nbr = list(map(int, self.neighbor(idx, NTE)))
-            k_nbr = list(map(int, self.neighbor(idx, KNG)))
-            a_nbr = list(map(int, self.neighbor(idx, ADJ)))
+            n_nbr = list(map(int, self.neighbor(idx, NTE).values()))
+            k_nbr = list(map(int, self.neighbor(idx, KNG).values()))
+            a_nbr = list(map(int, self.neighbor(idx, ADJ).values()))
 
             v_nbr[x] = h_nbr[y] = b_nbr[SUB*(x%SUB) + y%SUB] = val  # peek-update
 

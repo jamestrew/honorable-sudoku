@@ -120,6 +120,30 @@ class Controller(Notification):
                     COL: (offset, y),
                     BLK: (blk_x + offset//SUB, blk_y + offset%SUB)
                 }.get(lookup_type))
+        if self.__difficulty != MAGI_DIFF: return set(conflicts)
+
+        def problem_coord(val):
+            """
+            Finds the index (dict key) where conflict exists.
+            :return: coordinate (x,y) of conflict
+            """
+            prob_idx = list(config.keys())[list(config.values()).index(val)]
+            return (prob_idx//DIM, prob_idx%DIM)
+
+        idx = DIM*x + y
+        m_config_index = {
+            NTE: self.__p.neighbor(idx, NTE),
+            KNG: self.__p.neighbor(idx, KNG),
+            ADJ: self.__p.neighbor(idx, ADJ)
+        }
+        for (lookup_type, config) in m_config_index.items():
+            if val in config.values(): conflicts.append(problem_coord(val))
+            if lookup_type == ADJ:
+                if (val+1) in config.values():
+                    conflicts.append(problem_coord(val+1))
+                if val != 1:
+                    if (val-1) in config.values():
+                        conflicts.append(problem_coord(val-1))
         return set(conflicts)
 
     def gameboard_update(self, x, y, val):

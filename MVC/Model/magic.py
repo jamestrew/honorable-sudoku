@@ -8,12 +8,16 @@ class Magic_Puzzle(Puzzle):
     Inherits base rules, methods/properties from Puzzle.
 
     Adds three new lookups for neighbor:
-        - __nlookup (max len = 8)
-        - __klookup (max len = 8)
-        - __alookup (max len = 4)
+        - _nlookup (max len = 8)
+        - _klookup (max len = 8)
+        - _alookup (max len = 4)
     """
 
-    def __nlookup(self, index:int, /) -> list:
+    def __init__(self, grid=None, original=None, handle=None):
+        super().__init__(grid, original, handle)
+        self.__notif = handle
+
+    def _nlookup(self, index:int, /) -> list:
         """
         Neighboring cells created by Chess' knight's move.
 
@@ -33,10 +37,10 @@ class Magic_Puzzle(Puzzle):
                 if move >= 0 and move < DIM**2 and \
                         upper <= move_row <= lower and \
                         left <= move_col <= right:
-                    cells.append(self.__grid[move])
+                    cells.append(self._grid[move])
         return cells
 
-    def __klookup(self, index:int, /) -> list:
+    def _klookup(self, index:int, /) -> list:
         """
         Neighboring cells created by Chess' king's move.
 
@@ -49,12 +53,12 @@ class Magic_Puzzle(Puzzle):
         start = bounds.get(UPPER)*DIM + bounds.get(LEFT)  # top-left index of move rng
 
         blk = (
-            self.__grid[i:i+width]
+            self._grid[i:i+width]
             for i in range(start, height*DIM+start, DIM)
         )
         return reduce(concat, blk, [])
 
-    def __alookup(self, index:int, /) -> list:
+    def _alookup(self, index:int, /) -> list:
         """
         Adjacent neighboring cells (up/down, left/right by 1 cell).
         AKA king's move minus diagonals.
@@ -64,19 +68,19 @@ class Magic_Puzzle(Puzzle):
         """
         cells = []
         if index < DIM*DIM - DIM:  # get cell below
-            cells.append(self.__grid[index + DIM])
+            cells.append(self._grid[index + DIM])
         if index >= DIM:  # get cell above
-            cells.append(self.__grid[index - DIM])
+            cells.append(self._grid[index - DIM])
         if index%DIM != 0:  # get cell left
-            cells.append(self.__grid[index - 1])
+            cells.append(self._grid[index - 1])
         if (index+1)%DIM != 0:  # get cell right
-            cells.append(self.__grid[index + 1])
+            cells.append(self._grid[index + 1])
         return cells
 
     def __blk_helper(self, index:int, rng:int, /) -> dict:
         """
         Calculate upper/lower bounds of the rows/cols for respective moves.
-        Helper function for __nlookup, kings_move.
+        Helper function for _nlookup, kings_move.
 
         :param index: range(0, DIM*DIM)
         :param rng: num of cells away from the index cell to move (1 for king, 2 for knight)
@@ -107,7 +111,7 @@ class Magic_Puzzle(Puzzle):
         if not isinstance(lookup, int):
             raise TypeError   # invalid type
         elif (0 <= lookup <= 5):
-            if 0 <= lookup <= 3:
+            if 0 <= lookup < 3:
                 if not (0 <= index < DIM):
                     raise ValueError  # index out of range
             else:
@@ -116,12 +120,12 @@ class Magic_Puzzle(Puzzle):
         else: raise ValueError  # lookup out of range
 
         return {  # fetch by lookup-code at given index
-            BLK: lambda idx: self.__blookup(idx),
-            COL: lambda idx: self.__vlookup(idx),
-            ROW: lambda idx: self.__hlookup(idx),
-            NTE: lambda idx: self.__nlookup(idx),
-            KNG: lambda idx: self.__klookup(idx),
-            ADJ: lambda idx: self.__alookup(idx)
+            BLK: lambda idx: self._blookup(idx),
+            COL: lambda idx: self._vlookup(idx),
+            ROW: lambda idx: self._hlookup(idx),
+            NTE: lambda idx: self._nlookup(idx),
+            KNG: lambda idx: self._klookup(idx),
+            ADJ: lambda idx: self._alookup(idx)
         }.get(lookup)(index)
 
     def update(self, x:int, y:int, val:int, /) -> bool:
@@ -144,23 +148,29 @@ class Magic_Puzzle(Puzzle):
             n_nbr = list(map(int, self.neighbor(idx, NTE)))
             k_nbr = list(map(int, self.neighbor(idx, KNG)))
             a_nbr = list(map(int, self.neighbor(idx, ADJ)))
+
             v_nbr[x] = h_nbr[y] = b_nbr[SUB*(x%SUB) + y%SUB] = val  # peek-update
 
-            # and-map of indexed col, row, and blk distinctness
-            valid = len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
+            # classic sudoku valid check
+            classic_val = \
+                len(list(filter(lambda n: n!=0, v_nbr))) == len(set(v_nbr)-{0}) and \
                 len(list(filter(lambda n: n!=0, h_nbr))) == len(set(h_nbr)-{0}) and \
-                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0}) and \
-                len(list(filter(lambda n: n!=0, n_nbr))) == len(set(n_nbr)-{0}) and \
-                len(list(filter(lambda n: n!=0, k_nbr))) == len(set(k_nbr)-{0}) and \
-                (val-1) not in a_nbr and (val+1) not in a_nbr
+                len(list(filter(lambda n: n!=0, b_nbr))) == len(set(b_nbr)-{0})
+            # knight and king's move check
+            chess_val = val not in n_nbr and val not in k_nbr
+            # adjacent valid check (checks for consecutive values)
+            adj_val = (val-1) not in a_nbr and (val+1) not in a_nbr if val > 1 else \
+                (val+1) not in a_nbr
+
+            valid = all([classic_val, chess_val, adj_val])
 
         if valid:
-            if self.__grid[idx].locked:
+            if self._grid[idx].locked:
                 print(f"[Debug] Invalid move. This cell is locked.")
                 return False
             else:
-                self.__grid[idx].update(val)  # set value
+                self._grid[idx].update(val)  # set value
                 self.find_counts()
-                self.__remaining_moves += 1 if val == 0 else -1
+                self._remaining_moves += 1 if val == 0 else -1
                 if self.__notif: self.__notif.notify(x, y, val)
         return valid

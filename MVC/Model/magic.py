@@ -17,12 +17,12 @@ class Magic_Puzzle(Puzzle):
         super().__init__(grid, original, handle)
         self.__notif = handle
 
-    def _nlookup(self, index:int, /) -> list:
+    def _nlookup(self, index:int, /) -> dict:
         """
         Neighboring cells created by Chess' knight's move.
 
         :param index: range(0, DIM*DIM)
-        :return: list of cell values of valid knight moves.
+        :return: dict of cell index:values of valid knight moves.
         """
         bounds = self.__blk_helper(index, 2)
         upper, lower = bounds.get(UPPER), bounds.get(LOWER)
@@ -40,12 +40,12 @@ class Magic_Puzzle(Puzzle):
                     cells[move] = self._grid[move]
         return cells
 
-    def _klookup(self, index:int, /) -> list:
+    def _klookup(self, index:int, /) -> dict:
         """
         Neighboring cells created by Chess' king's move.
 
         :param index: range(0, DIM*DIM)
-        :return: list of cell values of valid king moves.
+        :return: dict of cell index:values of valid king moves.
         """
         bounds = self.__blk_helper(index, 1)
         height = bounds.get(LOWER) - bounds.get(UPPER) + 1  # height of move
@@ -58,13 +58,13 @@ class Magic_Puzzle(Puzzle):
                 cells[i+j] = self._grid[i+j]
         return cells
 
-    def _alookup(self, index:int, /) -> list:
+    def _alookup(self, index:int, /) -> dict:
         """
         Adjacent neighboring cells (up/down, left/right by 1 cell).
         AKA king's move minus diagonals.
 
         :param index: range(0, DIM*DIM)
-        :return: list of cell values of adjacent cells.
+        :return: dict of cell index:values of adjacent cells.
         """
         cells = {}
         if index < DIM*DIM - DIM:  # get cell below
@@ -112,9 +112,9 @@ class Magic_Puzzle(Puzzle):
             raise TypeError   # invalid type
         elif (0 <= lookup <= 5):
             if 0 <= lookup < 3:
-                if not (0 <= index < DIM):
+                if not (0 <= index < DIM):  # sudoku rules
                     raise ValueError  # index out of range
-            else:
+            else: # chess and adj rules
                 if not (0 <= index < DIM*DIM):
                     raise ValueError  # index out of range
         else: raise ValueError  # lookup out of range

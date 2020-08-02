@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 from MVC.Model.cell import Cell
 from functools import reduce
 from operator import concat
-from itertools import permutations
 from resource import *
 
 
@@ -258,93 +257,3 @@ class Puzzle(object):
         :return: a dict of number of times a number exists in the puzzle
         """
         return self.__counts
-
-
-class Magic_Puzzle(Puzzle):
-    """
-    Sudoku::Puzzle with magic ruleset.
-    Inherits base rules, methods/properties from Puzzle.
-
-    Adds three new lookups for neighbor:
-        - __knights_move (max len = 8)
-        - __kings_move (max len = 8)
-        - __adjacent (max len = 4)
-    """
-
-    def __knights_move(self, index:int, /) -> list:
-        """
-        Neighboring cells created by Chess' knight's move.
-
-        :param index: range(0, DIM*DIM)
-        :return: list of cell values of valid knight moves.
-
-        """
-        bounds = self.__blk_helper(index, 2)
-        upper, lower = bounds.get(UPPER), bounds.get(LOWER)
-        left, right = bounds.get(LEFT), bounds.get(RIGHT)
-
-        cells = []
-        for m1, m2 in permutations([1,2,-1,-2], 2):
-            if abs(m1) != abs(m2):
-                move = (index+m1) + (DIM*m2)
-                move_row = move//9
-                move_col = move%9
-                if move >= 0 and move < DIM**2 and \
-                        move_row in range(upper, lower+1) and \
-                        move_col in range(left, right+1):
-                    cells.append(self.__grid[move])
-        return cells
-
-    def __kings_move(self, index:int, /) -> list:
-        """
-        Neighboring cells created by Chess' king's move.
-
-        :param index: range(0, DIM*DIM)
-        :return: list of cell values of valid king moves.
-
-        """
-        bounds = self.__blk_helper(index, 1)
-        height = bounds.get(LOWER) - bounds.get(UPPER) + 1
-        width = bounds.get(RIGHT) - bounds.get(LEFT) + 1
-
-        start = bounds.get(UPPER)*DIM + bounds.get(LEFT)
-        blk = (
-            self.__grid[i:i+width]
-            for i in range(start, height*DIM+start, DIM)
-        )
-        return reduce(concat, blk, [])
-
-    def __adjacent(self, index:int, /) -> list:
-        """
-        Adjacent neighboring cells (up/down, left/right by 1 cell).
-        AKA king's move minus diagonals.
-
-        :param index: range(0, DIM*DIM)
-        :return: list of cell values of adjacent cells.
-
-        """
-        cells = []
-        if index < DIM*DIM - DIM:  # get cell below
-            cells.append(self.__grid[index + DIM])
-        if index >= DIM:  # get cell above
-            cells.append(self.__grid[index - DIM])
-        if index%DIM != 0:  # get cell left
-            cells.append(self.__grid[index - 1])
-        if (index+1)%DIM != 0:  # get cell right
-            cells.append(self.__grid[index + 1])
-        return cells
-
-    def __blk_helper(self, index:int, rng:int, /) -> dict:
-        """
-        Calculate upper/lower bounds of the rows/cols for respective moves.
-        Helper function for __knights_move, kings_move.
-
-        :param index: range(0, DIM*DIM)
-        :return: two sets of row and col numbers.
-        """
-        return {
-            UPPER: index//9 - rng if (index//9 - rng) > -1 else 0,
-            LOWER:index//9 + rng if (index//9 + rng) < DIM else DIM - 1,
-            LEFT:index%9 - rng if (index%9 - rng) > -1 else 0,
-            RIGHT:index%9 + rng if (index%9 + rng) < DIM else DIM - 1
-        }

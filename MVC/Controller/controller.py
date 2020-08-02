@@ -1,4 +1,5 @@
 from MVC.Model.puzzle import *
+from MVC.Model.magic import *
 from MVC.View.view import *
 
 

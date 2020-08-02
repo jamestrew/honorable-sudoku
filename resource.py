@@ -10,6 +10,9 @@ SUB = 3  # the dimension of puzzle box/block
 BLK = 0  # box/block
 COL = 1  # column
 ROW = 2  # row
+NTE = 3  # knight
+KNG = 4  # king
+ADJ = 5  # adjacent
 
 UPPER = 0
 LOWER = 1
